@@ -1,7 +1,9 @@
 
 
 import { buildApp } from "./main.ts";
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = await buildApp();
 
 await app.listen({
