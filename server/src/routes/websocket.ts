@@ -150,9 +150,9 @@ export async function websocketRoutes(app: FastifyInstance) {
                                 const fullWav = Buffer.concat([wavHeader, pcm]);
 
                                 // Send full base64 data URI directly to frontend player
-                                socket.emit("gemini:audio", {
-                                    src: `data:audio/wav;base64,${fullWav.toString("base64")}`,
-                                });
+                                // socket.emit("gemini:audio", {
+                                //     src: `data:audio/wav;base64,${fullWav.toString("base64")}`,
+                                // });
 
                                 // Clear array for the next turn
                                 audioChunks = [];
@@ -230,12 +230,15 @@ export async function websocketRoutes(app: FastifyInstance) {
 
         socket.on("stream:disconnect", async () => {
             console.log(`[Socket] User ${socket.id} requested stream disconnect.`);
-            await stopAndClearStream()
+            if (geminiSession) {
+                await geminiSession.close();
+            }
         })
 
         socket.on("stream:restart", async () => {
             console.log(`[Socket] Resetting stream for ${socket.id}...`);
-            socket.emit("gemini:status", { message: "Start new stream", type: "STOP_STREAM" });
+            // socket.emit("gemini:status", { message: "Start new stream", type: "STOP_STREAM" });
+            stopAndClearStream();
             await ensureGeminiSession();
         });
 
