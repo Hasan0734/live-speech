@@ -116,51 +116,93 @@ export async function websocketRoutes(app: FastifyInstance) {
                         const parts = message.serverContent?.modelTurn?.parts ?? [];
 
                         for (const part of parts) {
-                            // Collect PCM raw byte buffers
                             if (part.inlineData?.data) {
-                                const buffer = Buffer.from(part.inlineData.data, "base64");
-                                audioChunks.push(buffer);
-
-                                // Dynamically extract sample rate from mimeType if present
+                                // Extract sample rate (default 24000)
+                                let sampleRate = 24000;
                                 if (part.inlineData.mimeType) {
                                     const match = part.inlineData.mimeType.match(/rate=(\d+)/);
-                                    if (match && match[1]) {
-                                        detectedSampleRate = parseInt(match[1], 10);
-                                    }
+                                    if (match?.[1]) sampleRate = parseInt(match[1], 10);
                                 }
+
+                                // STREAM IMMEDIATELY: Do not wait for turnComplete
+                                socket.emit("gemini:audioChunk", {
+                                    base64Pcm: part.inlineData.data, // Raw 16-bit PCM base64
+                                    sampleRate,
+                                });
                             }
 
-                            // Optional streaming text transcript
                             // if (part.text) {
-                            //     socket.emit("gemini:text", part.text);
+                            //     socket.emit("gemini:text", { text: part.text, role: "model" });
                             // }
                         }
 
-                        // Turn complete -> Build complete WAV & send as Data URI
-                        if (message.serverContent?.turnComplete) {
-                            if (audioChunks.length > 0) {
-                                const pcm = Buffer.concat(audioChunks);
-
-                                const wavHeader = createWavHeader(pcm.length, {
-                                    numChannels: 1,
-                                    sampleRate: detectedSampleRate,
-                                    bitsPerSample: 16,
-                                });
-
-                                const fullWav = Buffer.concat([wavHeader, pcm]);
-
-                                // Send full base64 data URI directly to frontend player
-                                // socket.emit("gemini:audio", {
-                                //     src: `data:audio/wav;base64,${fullWav.toString("base64")}`,
-                                // });
-
-                                // Clear array for the next turn
-                                audioChunks = [];
-                            }
-
-                            socket.emit("gemini:turnComplete");
-                            // socket.emit("gemini:status", "IDLE");
+                        const transcriptionText = message.serverContent?.outputTranscription?.text;
+                        if (transcriptionText && parts.every(p => !p.text)) {
+                            socket.emit("gemini:text", {
+                                text: transcriptionText,
+                                role: "model",
+                            });
                         }
+
+                        if (message.serverContent?.turnComplete) {
+                            socket.emit("gemini:turnComplete");
+                        }
+
+                        // for (const part of parts) {
+                        //     // Collect PCM raw byte buffers
+                        //     if (part.inlineData?.data) {
+                        //         const buffer = Buffer.from(part.inlineData.data, "base64");
+                        //         audioChunks.push(buffer);
+
+                        //         // Dynamically extract sample rate from mimeType if present
+                        //         if (part.inlineData.mimeType) {
+                        //             const match = part.inlineData.mimeType.match(/rate=(\d+)/);
+                        //             if (match && match[1]) {
+                        //                 detectedSampleRate = parseInt(match[1], 10);
+                        //             }
+                        //         }
+                        //     }
+                        //     // 2. Stream inline model text chunks in real-time
+                        //     if (part.text) {
+                        //         socket.emit("gemini:text", {
+                        //             text: part.text,
+                        //             role: "model",
+                        //         });
+                        //     }
+                        // }
+                        // const transcriptionText = message.serverContent?.outputTranscription?.text;
+                        // if (transcriptionText && parts.every(p => !p.text)) {
+                        //     socket.emit("gemini:text", {
+                        //         text: transcriptionText,
+                        //         role: "model",
+                        //     });
+                        // }
+
+                        // // Turn complete -> Build complete WAV & send as Data URI
+                        // if (message.serverContent?.turnComplete) {
+                        //     if (audioChunks.length > 0) {
+                        //         const pcm = Buffer.concat(audioChunks);
+
+                        //         const wavHeader = createWavHeader(pcm.length, {
+                        //             numChannels: 1,
+                        //             sampleRate: detectedSampleRate,
+                        //             bitsPerSample: 16,
+                        //         });
+
+                        //         const fullWav = Buffer.concat([wavHeader, pcm]);
+
+                        //         // Send full base64 data URI directly to frontend player
+                        //         socket.emit("gemini:audio", {
+                        //             src: `data:audio/wav;base64,${fullWav.toString("base64")}`,
+                        //         });
+
+                        //         // Clear array for the next turn
+                        //         audioChunks = [];
+                        //     }
+
+                        //     socket.emit("gemini:turnComplete");
+                        //     // socket.emit("gemini:status", "IDLE");
+                        // }
                     },
                     onerror: function (e: ErrorEvent) {
                         console.debug('Error:', e.message)
@@ -189,6 +231,7 @@ export async function websocketRoutes(app: FastifyInstance) {
 
 
         socket.on("text:prompt", async (prompt) => {
+            console.log({prompt})
 
             try {
                 const session = await ensureGeminiSession();
@@ -199,20 +242,6 @@ export async function websocketRoutes(app: FastifyInstance) {
                 console.error("Failed to send prompt:", error);
                 socket.emit("gemini:status", { message: "Something wrong", type: "ERROR" });
             }
-
-            await geminiSession?.sendClientContent({
-                turns: [
-                    {
-                        role: "user",
-                        parts: [
-                            {
-                                text: prompt,
-                            },
-                        ],
-                    },
-                ],
-            });
-
 
         })
 
