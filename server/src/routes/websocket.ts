@@ -115,7 +115,9 @@ export async function websocketRoutes(app: FastifyInstance) {
                     onmessage(message: LiveServerMessage) {
                         const parts = message.serverContent?.modelTurn?.parts ?? [];
 
+
                         for (const part of parts) {
+                            console.log(part)
                             if (part.inlineData?.data) {
                                 // Extract sample rate (default 24000)
                                 let sampleRate = 24000;
@@ -143,6 +145,19 @@ export async function websocketRoutes(app: FastifyInstance) {
                                 role: "model",
                             });
                         }
+
+
+                        const inputText = message.serverContent?.inputTranscription?.text
+
+                        if (inputText) {
+                            socket.emit("gemini:text", {
+                                text: inputText,
+                                role: "user",
+                            });
+                        }
+
+                        // console.log({ inputText: message.serverContent?.inputTranscription?.text })
+                        // console.log({ audio: message.serverContent?.modelTurn?.parts })
 
                         if (message.serverContent?.turnComplete) {
                             socket.emit("gemini:turnComplete");
@@ -231,7 +246,7 @@ export async function websocketRoutes(app: FastifyInstance) {
 
 
         socket.on("text:prompt", async (prompt) => {
-            console.log({prompt})
+            console.log({ prompt })
 
             try {
                 const session = await ensureGeminiSession();
@@ -247,14 +262,20 @@ export async function websocketRoutes(app: FastifyInstance) {
 
 
         socket.on("audio:chunk", async (data: { mineType?: string; base64: string }) => {
-            const session = await ensureGeminiSession();
-
-            session.sendRealtimeInput({
-                audio: {
-                    data: data.base64,
-                    mimeType: data.mineType || "audio/pcm;rate=16000",
-                }
-            })
+            try {
+                const session = await ensureGeminiSession();
+                await session.sendRealtimeInput({
+                    
+                    audio: {
+                        
+                        data: data.base64,
+                        mimeType: data.mineType || "audio/pcm;rate=16000",
+                    }
+                })
+            } catch (error) {
+                console.error("Failed to send prompt:", error);
+                socket.emit("gemini:status", { message: "Something wrong", type: "ERROR" });
+            }
         })
 
         socket.on("stream:disconnect", async () => {
