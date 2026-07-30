@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { Socket } from "socket.io";
-import { GoogleGenAI, LiveServerMessage, Modality, MediaResolution, Session } from '@google/genai';
-import { writeFile } from 'fs';
+import { GoogleGenAI, LiveServerMessage, Modality, MediaResolution, Session, ThinkingLevel, TurnCoverage, ActivityHandling, StartSensitivity, EndSensitivity } from '@google/genai';
+import { v4 as uuidv4 } from 'uuid';
 
 
 const responseQueue: LiveServerMessage[] = [];
@@ -65,18 +65,33 @@ export async function websocketRoutes(app: FastifyInstance) {
         responseModalities: [
             Modality.AUDIO,
         ],
+        thinkingLevel: ThinkingLevel.LOW,
         mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
         speechConfig: {
             voiceConfig: {
                 prebuiltVoiceConfig: {
                     voiceName: 'Zephyr',
                 }
-            }
+            },
+
         },
         contextWindowCompression: {
             triggerTokens: '104857',
             slidingWindow: { targetTokens: '52428' },
         },
+
+        // realtimeInputConfig: {
+        //     automaticActivityDetection: {
+        //         disabled: false,
+        //         silenceDurationMs: 2000,
+        //         prefixPaddingMs: 500,
+        //         startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_UNSPECIFIED,
+        //         endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_UNSPECIFIED,
+
+        //     },
+        //     activityHandling: ActivityHandling.ACTIVITY_HANDLING_UNSPECIFIED,
+        //     turnCoverage: TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY
+        // }
     };
 
 
@@ -85,13 +100,12 @@ export async function websocketRoutes(app: FastifyInstance) {
 
         let geminiSession: Session | null = null;
         let audioChunks: Buffer[] = [];
-        let detectedSampleRate = 24000;
 
 
         async function stopAndClearStream() {
             if (geminiSession) {
                 try {
-                    await geminiSession.close();
+                    geminiSession.close();
                 } catch (e) {
                     console.error("Error closing session:", e);
                 }
@@ -113,11 +127,30 @@ export async function websocketRoutes(app: FastifyInstance) {
                         socket.emit("gemini:status", { message: "Stream is live", type: "LIVE_STREAM" });
                     },
                     onmessage(message: LiveServerMessage) {
+
+
+
+                        if (message.data) {
+                            // console.log(message.data?.slice(0, 100))
+
+                            socket.emit("user:audio", message)
+                        }
+
+                        const inputText = message.serverContent?.inputTranscription?.text
+
+                        if (inputText) {
+
+                            socket.emit("gemini:input-text", {
+                                id: uuidv4(),
+                                text: inputText,
+                                role: "user",
+                            });
+                        }
+
                         const parts = message.serverContent?.modelTurn?.parts ?? [];
 
 
                         for (const part of parts) {
-                            console.log(part)
                             if (part.inlineData?.data) {
                                 // Extract sample rate (default 24000)
                                 let sampleRate = 24000;
@@ -126,8 +159,10 @@ export async function websocketRoutes(app: FastifyInstance) {
                                     if (match?.[1]) sampleRate = parseInt(match[1], 10);
                                 }
 
+
                                 // STREAM IMMEDIATELY: Do not wait for turnComplete
                                 socket.emit("gemini:audioChunk", {
+                                    id: uuidv4(),
                                     base64Pcm: part.inlineData.data, // Raw 16-bit PCM base64
                                     sampleRate,
                                 });
@@ -141,83 +176,19 @@ export async function websocketRoutes(app: FastifyInstance) {
                         const transcriptionText = message.serverContent?.outputTranscription?.text;
                         if (transcriptionText && parts.every(p => !p.text)) {
                             socket.emit("gemini:text", {
+                                id: uuidv4(),
                                 text: transcriptionText,
                                 role: "model",
                             });
                         }
 
-
-                        const inputText = message.serverContent?.inputTranscription?.text
-
-                        if (inputText) {
-                            socket.emit("gemini:text", {
-                                text: inputText,
-                                role: "user",
-                            });
+                        if (message.serverContent?.interrupted) {
+                            console.log("user start to talking...")
                         }
-
-                        // console.log({ inputText: message.serverContent?.inputTranscription?.text })
-                        // console.log({ audio: message.serverContent?.modelTurn?.parts })
-
                         if (message.serverContent?.turnComplete) {
                             socket.emit("gemini:turnComplete");
                         }
 
-                        // for (const part of parts) {
-                        //     // Collect PCM raw byte buffers
-                        //     if (part.inlineData?.data) {
-                        //         const buffer = Buffer.from(part.inlineData.data, "base64");
-                        //         audioChunks.push(buffer);
-
-                        //         // Dynamically extract sample rate from mimeType if present
-                        //         if (part.inlineData.mimeType) {
-                        //             const match = part.inlineData.mimeType.match(/rate=(\d+)/);
-                        //             if (match && match[1]) {
-                        //                 detectedSampleRate = parseInt(match[1], 10);
-                        //             }
-                        //         }
-                        //     }
-                        //     // 2. Stream inline model text chunks in real-time
-                        //     if (part.text) {
-                        //         socket.emit("gemini:text", {
-                        //             text: part.text,
-                        //             role: "model",
-                        //         });
-                        //     }
-                        // }
-                        // const transcriptionText = message.serverContent?.outputTranscription?.text;
-                        // if (transcriptionText && parts.every(p => !p.text)) {
-                        //     socket.emit("gemini:text", {
-                        //         text: transcriptionText,
-                        //         role: "model",
-                        //     });
-                        // }
-
-                        // // Turn complete -> Build complete WAV & send as Data URI
-                        // if (message.serverContent?.turnComplete) {
-                        //     if (audioChunks.length > 0) {
-                        //         const pcm = Buffer.concat(audioChunks);
-
-                        //         const wavHeader = createWavHeader(pcm.length, {
-                        //             numChannels: 1,
-                        //             sampleRate: detectedSampleRate,
-                        //             bitsPerSample: 16,
-                        //         });
-
-                        //         const fullWav = Buffer.concat([wavHeader, pcm]);
-
-                        //         // Send full base64 data URI directly to frontend player
-                        //         socket.emit("gemini:audio", {
-                        //             src: `data:audio/wav;base64,${fullWav.toString("base64")}`,
-                        //         });
-
-                        //         // Clear array for the next turn
-                        //         audioChunks = [];
-                        //     }
-
-                        //     socket.emit("gemini:turnComplete");
-                        //     // socket.emit("gemini:status", "IDLE");
-                        // }
                     },
                     onerror: function (e: ErrorEvent) {
                         console.debug('Error:', e.message)
@@ -234,13 +205,6 @@ export async function websocketRoutes(app: FastifyInstance) {
 
             return geminiSession;
 
-            // geminiSession.sendClientContent({
-            //     turns: [
-            //         `INSERT_INPUT_HERE`
-            //     ]
-            // });
-            // await handleTurn()
-            // geminiSession.close()
 
         }
 
@@ -250,8 +214,9 @@ export async function websocketRoutes(app: FastifyInstance) {
 
             try {
                 const session = await ensureGeminiSession();
-                await session.sendClientContent({
-                    turns: [{ role: "user", parts: [{ text: prompt }] }],
+                session.sendRealtimeInput({
+
+                    text: prompt,
                 });
             } catch (error) {
                 console.error("Failed to send prompt:", error);
@@ -264,12 +229,27 @@ export async function websocketRoutes(app: FastifyInstance) {
         socket.on("audio:chunk", async (data: { mineType?: string; base64: string }) => {
             try {
                 const session = await ensureGeminiSession();
-                await session.sendRealtimeInput({
-                    
+                session.sendRealtimeInput({
                     audio: {
-                        
+
                         data: data.base64,
                         mimeType: data.mineType || "audio/pcm;rate=16000",
+                    }
+                })
+            } catch (error) {
+                console.error("Failed to send prompt:", error);
+                socket.emit("gemini:status", { message: "Something wrong", type: "ERROR" });
+            }
+        })
+
+        socket.on("user:video", async (data) => {
+            try {
+                const session = await ensureGeminiSession();
+                session.sendRealtimeInput({
+                    video: {
+
+                        data: data.base64,
+                        mimeType: data.mineType || "image/jpeg",
                     }
                 })
             } catch (error) {
