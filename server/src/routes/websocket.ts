@@ -2,6 +2,8 @@ import type { FastifyInstance } from "fastify";
 import type { Socket } from "socket.io";
 import { GoogleGenAI, LiveServerMessage, Modality, MediaResolution, Session, ThinkingLevel, TurnCoverage, ActivityHandling, StartSensitivity, EndSensitivity } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
+import { ai } from '../lib/utils'
+
 interface WavConversionOptions {
     numChannels: number,
     sampleRate: number,
@@ -9,9 +11,6 @@ interface WavConversionOptions {
 }
 export async function websocketRoutes(app: FastifyInstance) {
 
-    const ai = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY,
-    });
 
     const model = 'models/gemini-3.1-flash-live-preview'
 

@@ -5,6 +5,7 @@ import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import socketIo from "./realtime/socket";
 import cors from "@fastify/cors"
 import { websocketRoutes } from './routes/websocket';
+import { TextToSpeech } from './routes/text-to-speech';
 
 
 
@@ -22,6 +23,7 @@ export async function buildApp() {
     });
 
    await app.register(websocketRoutes)
+   await app.register(TextToSpeech)
 
     // app.register(async function (fastify) {
     //     // Define WebSocket route for Next.js clients
