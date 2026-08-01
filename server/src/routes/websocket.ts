@@ -2,32 +2,37 @@ import type { FastifyInstance } from "fastify";
 import type { Socket } from "socket.io";
 import { GoogleGenAI, LiveServerMessage, Modality, MediaResolution, Session, ThinkingLevel, TurnCoverage, ActivityHandling, StartSensitivity, EndSensitivity } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
-import { ai } from '../lib/utils'
+
 
 interface WavConversionOptions {
     numChannels: number,
     sampleRate: number,
     bitsPerSample: number
 }
+
+
+
+
 export async function websocketRoutes(app: FastifyInstance) {
-
-
+    const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+    });
     const model = 'models/gemini-3.1-flash-live-preview'
+    // speechConfig: {
+    //     voiceConfig: {
+    //         prebuiltVoiceConfig: {
+    //             voiceName: 'Zephyr',
+    //         }
+    //     },
 
+    // },
     const config = {
         responseModalities: [
             Modality.AUDIO,
         ],
         thinkingLevel: ThinkingLevel.LOW,
         mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-        speechConfig: {
-            voiceConfig: {
-                prebuiltVoiceConfig: {
-                    voiceName: 'Zephyr',
-                }
-            },
 
-        },
         contextWindowCompression: {
             triggerTokens: '104857',
             slidingWindow: { targetTokens: '52428' },
@@ -68,7 +73,7 @@ export async function websocketRoutes(app: FastifyInstance) {
             socket.emit("gemini:status", { message: "", type: "" });
         }
 
-        async function ensureGeminiSession() {
+        async function ensureGeminiSession(voice: string) {
             if (geminiSession) return geminiSession;
             socket.emit("gemini:status", { message: "Connecting to server...", type: "" });
 
@@ -140,15 +145,29 @@ export async function websocketRoutes(app: FastifyInstance) {
                         socket.emit("gemini:status", { message: "Start new stream", type: "STOP_STREAM" });
                     }
                 },
-                config
+                config: {
+                    ...config,
+
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: voice || "Zephyr",
+                            }
+                        },
+
+                    },
+
+                }
             })
             return geminiSession;
 
         }
-        socket.on("text:prompt", async (prompt) => {
+        socket.on("text:prompt", async ({ prompt, voice }) => {
             try {
-                const session = await ensureGeminiSession();
+                const session = await ensureGeminiSession(voice);
+
                 session.sendRealtimeInput({
+
                     text: prompt,
                 });
             } catch (error) {
@@ -157,9 +176,9 @@ export async function websocketRoutes(app: FastifyInstance) {
             }
         })
 
-        socket.on("audio:chunk", async (data: { mineType?: string; base64: string }) => {
+        socket.on("audio:chunk", async (data: { mineType?: string; base64: string, voice: string }) => {
             try {
-                const session = await ensureGeminiSession();
+                const session = await ensureGeminiSession(data.voice);
                 session.sendRealtimeInput({
                     audio: {
                         data: data.base64,
@@ -195,11 +214,11 @@ export async function websocketRoutes(app: FastifyInstance) {
             }
         })
 
-        socket.on("stream:restart", async () => {
+        socket.on("stream:restart", async ({ voice }) => {
             console.log(`[Socket] Resetting stream for ${socket.id}...`);
             // socket.emit("gemini:status", { message: "Start new stream", type: "STOP_STREAM" });
             stopAndClearStream();
-            await ensureGeminiSession();
+            await ensureGeminiSession(voice);
         });
 
         socket.on("stream:new-chat", async () => {

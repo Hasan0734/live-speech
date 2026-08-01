@@ -66,6 +66,7 @@ export async function TextToSpeech(app: FastifyInstance) {
         }
 
         try {
+            console.log({voice})
             const ai = getAi()
             const response = await ai.models.generateContent({
                 model: "gemini-3.1-flash-tts-preview",
