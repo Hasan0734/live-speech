@@ -8,10 +8,10 @@ import React, {
   useState,
 } from "react";
 import { motion } from "motion/react";
-import VoiceAvatar from "./VoiceAvatar";
+import VoiceAvatar from "../VoiceAvatar";
 import { formatTime } from "@/lib/utils";
 import { VoiceInfo } from "@/lib/type";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
   Check,
   ChevronDown,
@@ -208,65 +208,197 @@ const ExpandedPlayer = ({
   return (
     <motion.div
       key="expanded-player"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 24 }}
+      // initial={{ opacity: 0, y: 24 }}
+      // animate={{ opacity: 1, y: 0 }}
+      // exit={{ opacity: 0, y: 24 }}
       transition={{
         type: "spring",
         stiffness: 260,
         damping: 26,
       }}
-      className="overflow-hidden border-t cursor-default"
+      className="overflow-hidden cursor-default"
     >
       <div className="px-3 pb-4 pt-2 sm:px-5">
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          className="group mx-auto mb-3 flex w-full flex-col items-center"
-          aria-label="Collapse audio player"
-        >
-          <span className="h-1 w-12 rounded-full bg-muted-foreground/20 transition-all group-hover:w-16 group-hover:bg-muted-foreground/40" />
-        </button>
+       
 
-        <div className="flex items-start gap-3">
-          <VoiceAvatar
-            isPlaying={isPlaying}
-            isGenerating={isGenerating}
-            large
-          />
+        <div className="flex items-start justify-between gap-10">
+          <div className="flex items-start gap-3">
+            <VoiceAvatar isPlaying={isPlaying} isGenerating={isGenerating} />
 
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-sm font-semibold sm:text-base">
-                {isGenerating ? "Generating your speech" : voice.name}
-              </h2>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="truncate text-sm font-semibold sm:text-base">
+                  { voice.name}
+                </h2>
 
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  isGenerating
-                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                }`}
-              >
-                {isGenerating ? "Processing" : "Generated"}
-              </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    isGenerating
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  }`}
+                >
+                  {isGenerating ? "Processing" : "Generated"}
+                </span>
+              </div>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                {voice.language}
+                {voice.gender ? ` · ${voice.gender}` : ""}
+                {voice.style ? ` · ${voice.style}` : ""}
+              </p>
+
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                {voice.provider && <span>{voice.provider}</span>}
+
+                {!isGenerating && (
+                  <>
+                    <span>{generatedAt}</span>
+                    {/* <span>{formatTime(duration)}</span> */}
+                  </>
+                )}
+              </div>
             </div>
+          </div>
 
-            <p className="mt-1 text-xs text-muted-foreground">
-              {voice.language}
-              {voice.gender ? ` · ${voice.gender}` : ""}
-              {voice.style ? ` · ${voice.style}` : ""}
-            </p>
+          <div className="flex-1">
+            <div className="w-full">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleMute}
+                    className="size-9 rounded-full"
+                    aria-label={volume === 0 ? "Unmute audio" : "Mute audio"}
+                  >
+                    {volume === 0 ? (
+                      <VolumeX className="size-4" />
+                    ) : volume < 0.5 ? (
+                      <Volume1 className="size-4" />
+                    ) : (
+                      <Volume2 className="size-4" />
+                    )}
+                  </Button>
 
-            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-              {voice.provider && <span>{voice.provider}</span>}
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    aria-label="Audio volume"
+                    className="hidden h-1 w-20 cursor-pointer accent-primary sm:block"
+                  />
+                </div>
 
-              {!isGenerating && (
-                <>
-                  <span>{generatedAt}</span>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={!hasAudio}
+                    onClick={() => skipTime(-10)}
+                    className="size-10 rounded-full"
+                    aria-label="Rewind 10 seconds"
+                  >
+                    <div className="relative">
+                      <RotateCcw className="size-5" />
+                      <span className="absolute inset-0 flex items-center justify-center pt-0.5 text-[7px] font-bold">
+                        10
+                      </span>
+                    </div>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="icon"
+                    disabled={!hasAudio}
+                    onClick={() => togglePlay()}
+                    className="size-10 rounded-full shadow-sm transition-transform hover:scale-105 active:scale-95"
+                    aria-label={isPlaying ? "Pause speech" : "Play speech"}
+                  >
+                    {isAudioLoading ? (
+                      <span className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : isPlaying ? (
+                      <Pause className="size-5 fill-current" />
+                    ) : (
+                      <Play className="ml-0.5 size-5 fill-current" />
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={!hasAudio}
+                    onClick={() => skipTime(10)}
+                    className="size-10 rounded-full"
+                    aria-label="Forward 10 seconds"
+                  >
+                    <div className="relative">
+                      <RotateCw className="size-5" />
+                      <span className="absolute inset-0 flex items-center justify-center pt-0.5 text-[7px] font-bold">
+                        10
+                      </span>
+                    </div>
+                  </Button>
+                </div>
+
+                {/* <div className="flex justify-end">
+                    <span className="hidden text-[11px] text-muted-foreground sm:block">
+                      Speech preview
+                    </span>
+                  </div> */}
+              </div>
+              <div className="mt-2 w-full">
+                <div
+                  ref={progressRef}
+                  onClick={handleProgressClick}
+                  className="group relative flex h-3 cursor-pointer items-center"
+                >
+                  <div className="relative h-1 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="absolute inset-y-0 left-0 bg-muted-foreground/15"
+                      style={{
+                        width: `${buffered}%`,
+                      }}
+                    />
+
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full bg-primary"
+                      style={{
+                        width: `${progressPercentage}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    className="pointer-events-none absolute size-3.5 -translate-x-1/2 rounded-full border-2 border-background bg-primary opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                    style={{
+                      left: `${progressPercentage}%`,
+                    }}
+                  />
+
+                  <input
+                    type="range"
+                    min={0}
+                    max={duration || 0}
+                    step={0.01}
+                    value={currentTime}
+                    onChange={handleSeekChange}
+                    aria-label="Audio progress"
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
+                </div>
+
+                <div className="flex justify-between text-[11px] tabular-nums text-muted-foreground">
+                  <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
-                </>
-              )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -360,7 +492,7 @@ const ExpandedPlayer = ({
           </div>
         </div>
 
-        {isGenerating ? (
+        {/* {isGenerating ? (
           <GeneratingState />
         ) : (
           <>
@@ -502,7 +634,7 @@ const ExpandedPlayer = ({
               </div>
             </div>
           </>
-        )}
+        )} */}
       </div>
     </motion.div>
   );

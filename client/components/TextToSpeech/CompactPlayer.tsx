@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { motion } from "motion/react";
-import VoiceAvatar from "./VoiceAvatar";
+import VoiceAvatar from "../VoiceAvatar";
 import { Pause, Play } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { formatTime } from "@/lib/utils";
 import { VoiceInfo } from "@/lib/type";
 

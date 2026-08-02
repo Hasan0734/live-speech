@@ -4,11 +4,11 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "./ui/input-group";
+} from "../ui/input-group";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Transcript } from "@/lib/type";
-import ChooseVoice from "./ChooseVoice";
+import ChooseVoice from "../ChooseVoice";
 import { v4 as uuidv4 } from "uuid";
 
 interface ChatFormType {
@@ -54,7 +54,7 @@ const TextChatForm = ({ setText, text }: any) => {
               <ToolCaseIcon /> Tools
             </InputGroupButton>
 
-            <ChooseVoice />
+            {/* <ChooseVoice /> */}
           </div>
           <div className="flex gap-1 items-center justify-end w-full">
             <Button

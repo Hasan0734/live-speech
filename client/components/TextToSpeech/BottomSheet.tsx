@@ -1,34 +1,10 @@
 "use client";
 
-import React, {
-  ChangeEvent,
-  MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { AnimatePresence, motion } from "motion/react";
-import {
-  Check,
-  ChevronDown,
-  Download,
-  Gauge,
-  Pause,
-  Play,
-  RotateCcw,
-  RotateCw,
-  Sparkles,
-  Volume1,
-  Volume2,
-  VolumeX,
-  Waves,
-} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 
-import { Button } from "./ui/button";
 import CompactPlayer from "./CompactPlayer";
-import VoiceAvatar from "./VoiceAvatar";
 import { VoiceInfo } from "@/lib/type";
-import { formatTime } from "@/lib/utils";
 import ExpandedPlayer from "./ExpandedPlayer";
 
 interface BottomSheetProps {
@@ -38,8 +14,6 @@ interface BottomSheetProps {
   generatedAt?: string;
   isGenerating?: boolean;
 }
-
-const playbackRates = [0.75, 1, 1.25, 1.5, 2];
 
 const BottomSheet: React.FC<BottomSheetProps> = ({
   audioUrl,
@@ -226,10 +200,57 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative">
       <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" />
+      {/* 
+      <CompactPlayer
+        currentTime={currentTime}
+        duration={duration}
+        togglePlay={togglePlay}
+        voice={voice}
+        isAudioLoading={isAudioLoading}
+        isPlaying={isPlaying}
+        isGenerating={isGenerating}
+        setExpanded={setExpanded}
+        hasAudio={hasAudio}
+      /> */}
 
-      <AnimatePresence mode="wait">
+      {!expanded && (
+     
+        <div className="absolute w-full bottom-1 0">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="group mx-auto mb-3 flex w-full flex-col items-center"
+            aria-label="Collapse audio player"
+          >
+            <span className="h-1 w-20 rounded-full bg-muted-foreground/20 transition-all group-hover:w-16 group-hover:bg-muted-foreground/40" />
+          </button>
+        </div>
+      )}
+      {expanded && (
+        <ExpandedPlayer
+          isGenerating={isGenerating}
+          isPlaying={isPlaying}
+          generatedAt={generatedAt}
+          setExpanded={setExpanded}
+          voice={voice}
+          duration={duration}
+          setCurrentTime={setCurrentTime}
+          audioRef={audioRef}
+          hasAudio={hasAudio}
+          downloadComplete={downloadComplete}
+          setShowSpeedMenu={setShowSpeedMenu}
+          setDownloadComplete={setDownloadComplete}
+          audioUrl={audioUrl}
+          fileName={fileName}
+          currentTime={currentTime}
+          buffered={buffered}
+          isAudioLoading={isAudioLoading}
+          togglePlay={togglePlay}
+        />
+      )}
+      {/* <AnimatePresence mode="wait">
         {!expanded ? (
           <CompactPlayer
             currentTime={currentTime}
@@ -264,7 +285,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             togglePlay={togglePlay}
           />
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
     </div>
   );
 };
