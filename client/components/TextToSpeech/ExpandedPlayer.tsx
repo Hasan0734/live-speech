@@ -37,7 +37,6 @@ interface ExpandedPlayerProps {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   fileName: string;
   downloadComplete: boolean;
-  setShowSpeedMenu: Dispatch<SetStateAction<boolean>>;
   setDownloadComplete: Dispatch<SetStateAction<boolean>>;
   audioUrl: string | null | undefined;
   currentTime: number;
@@ -58,7 +57,6 @@ const ExpandedPlayer = ({
   audioRef,
   fileName,
   downloadComplete,
-  setShowSpeedMenu,
   setDownloadComplete,
   audioUrl,
   currentTime,
@@ -70,8 +68,6 @@ const ExpandedPlayer = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [volume, setVolume] = useState(1);
   const [previousVolume, setPreviousVolume] = useState(1);
-
-  const [playbackRate, setPlaybackRate] = useState(1);
 
   const skipTime = (amount: number): void => {
     const audio = audioRef.current;
@@ -144,16 +140,6 @@ const ExpandedPlayer = ({
     setVolume(restoredVolume);
   };
 
-  const changePlaybackRate = (rate: number): void => {
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    audio.playbackRate = rate;
-    setPlaybackRate(rate);
-    setShowSpeedMenu(false);
-  };
-
   const handleDownload = async (): Promise<void> => {
     if (!audioUrl) return;
 
@@ -208,9 +194,9 @@ const ExpandedPlayer = ({
   return (
     <motion.div
       key="expanded-player"
-      // initial={{ opacity: 0, y: 24 }}
-      // animate={{ opacity: 1, y: 0 }}
-      // exit={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{
         type: "spring",
         stiffness: 260,
@@ -219,16 +205,14 @@ const ExpandedPlayer = ({
       className="overflow-hidden cursor-default"
     >
       <div className="px-3 pb-4 pt-2 sm:px-5">
-       
-
-        <div className="flex items-start justify-between gap-10">
+        <div className="flex items-center justify-between gap-10 ">
           <div className="flex items-start gap-3">
             <VoiceAvatar isPlaying={isPlaying} isGenerating={isGenerating} />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="truncate text-sm font-semibold sm:text-base">
-                  { voice.name}
+                  {voice.name}
                 </h2>
 
                 <span
@@ -346,12 +330,6 @@ const ExpandedPlayer = ({
                     </div>
                   </Button>
                 </div>
-
-                {/* <div className="flex justify-end">
-                    <span className="hidden text-[11px] text-muted-foreground sm:block">
-                      Speech preview
-                    </span>
-                  </div> */}
               </div>
               <div className="mt-2 w-full">
                 <div
@@ -403,61 +381,6 @@ const ExpandedPlayer = ({
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
-            {/* <div ref={speedMenuRef} className="relative">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={!hasAudio || isGenerating}
-                      onClick={() => setShowSpeedMenu((value) => !value)}
-                      className="h-9 gap-1 rounded-full px-2.5 text-xs"
-                    >
-                      <Gauge className="size-3.5" />
-                      {playbackRate}×
-                    </Button>
-
-                    <AnimatePresence>
-                      {showSpeedMenu && (
-                        <motion.div
-                          initial={{
-                            opacity: 0,
-                            y: 6,
-                            scale: 0.96,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            y: 0,
-                            scale: 1,
-                          }}
-                          exit={{
-                            opacity: 0,
-                            y: 6,
-                            scale: 0.96,
-                          }}
-                          className="absolute bottom-full right-0 z-30 mb-2 w-32 overflow-hidden rounded-xl border bg-popover p-1 shadow-xl"
-                        >
-                          {playbackRates.map((rate) => (
-                            <button
-                              key={rate}
-                              type="button"
-                              onClick={() => changePlaybackRate(rate)}
-                              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs transition-colors hover:bg-accent ${
-                                playbackRate === rate
-                                  ? "bg-accent font-medium"
-                                  : ""
-                              }`}
-                            >
-                              {rate}×
-                              {playbackRate === rate && (
-                                <Check className="size-3.5" />
-                              )}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div> */}
-
             <Button
               type="button"
               variant="outline"
@@ -491,150 +414,6 @@ const ExpandedPlayer = ({
             </Button>
           </div>
         </div>
-
-        {/* {isGenerating ? (
-          <GeneratingState />
-        ) : (
-          <>
-            <div className="mt-4">
-              <div
-                ref={progressRef}
-                onClick={handleProgressClick}
-                className="group relative flex h-5 cursor-pointer items-center"
-              >
-                <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-muted-foreground/15"
-                    style={{
-                      width: `${buffered}%`,
-                    }}
-                  />
-
-                  <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                    style={{
-                      width: `${progressPercentage}%`,
-                    }}
-                  />
-                </div>
-
-                <div
-                  className="pointer-events-none absolute size-3.5 -translate-x-1/2 rounded-full border-2 border-background bg-primary opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
-                  style={{
-                    left: `${progressPercentage}%`,
-                  }}
-                />
-
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 0}
-                  step={0.01}
-                  value={currentTime}
-                  onChange={handleSeekChange}
-                  aria-label="Audio progress"
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                />
-              </div>
-
-              <div className="flex justify-between text-[11px] tabular-nums text-muted-foreground">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleMute}
-                  className="size-9 rounded-full"
-                  aria-label={volume === 0 ? "Unmute audio" : "Mute audio"}
-                >
-                  {volume === 0 ? (
-                    <VolumeX className="size-4" />
-                  ) : volume < 0.5 ? (
-                    <Volume1 className="size-4" />
-                  ) : (
-                    <Volume2 className="size-4" />
-                  )}
-                </Button>
-
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  aria-label="Audio volume"
-                  className="hidden h-1 w-20 cursor-pointer accent-primary sm:block"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={!hasAudio}
-                  onClick={() => skipTime(-10)}
-                  className="size-10 rounded-full"
-                  aria-label="Rewind 10 seconds"
-                >
-                  <div className="relative">
-                    <RotateCcw className="size-5" />
-                    <span className="absolute inset-0 flex items-center justify-center pt-0.5 text-[7px] font-bold">
-                      10
-                    </span>
-                  </div>
-                </Button>
-
-                <Button
-                  type="button"
-                  size="icon"
-                  disabled={!hasAudio}
-                  onClick={() => togglePlay()}
-                  className="size-12 rounded-full shadow-sm transition-transform hover:scale-105 active:scale-95"
-                  aria-label={isPlaying ? "Pause speech" : "Play speech"}
-                >
-                  {isAudioLoading ? (
-                    <span className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : isPlaying ? (
-                    <Pause className="size-5 fill-current" />
-                  ) : (
-                    <Play className="ml-0.5 size-5 fill-current" />
-                  )}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={!hasAudio}
-                  onClick={() => skipTime(10)}
-                  className="size-10 rounded-full"
-                  aria-label="Forward 10 seconds"
-                >
-                  <div className="relative">
-                    <RotateCw className="size-5" />
-                    <span className="absolute inset-0 flex items-center justify-center pt-0.5 text-[7px] font-bold">
-                      10
-                    </span>
-                  </div>
-                </Button>
-              </div>
-
-              <div className="flex justify-end">
-                <span className="hidden text-[11px] text-muted-foreground sm:block">
-                  Speech preview
-                </span>
-              </div>
-            </div>
-          </>
-        )} */}
       </div>
     </motion.div>
   );

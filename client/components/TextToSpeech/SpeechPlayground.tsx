@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/input-group";
 import BottomSheet from "@/components/TextToSpeech/BottomSheet";
 import { VoiceInfo } from "@/lib/type";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+
+import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 
 const SpeechPlayground = () => {
   const [text, setText] = useState<string>("");
@@ -48,14 +49,16 @@ const SpeechPlayground = () => {
       if (res.data) {
         setAudioUrl(res.data.audioUrl);
         setResVoice((prev) => ({ ...prev, name: res.data.voiceUsed }));
+        setLoading(false);
+
+        return;
       }
 
-      //   const audioBlob = await res.blob();
-      //   const nextAudioUrl = URL.createObjectURL(audioBlob);
+      toast.error("Try again later. 😭");
 
       setLoading(false);
     } catch (error: any) {
-      console.error(error.message);
+      toast.error("Something is wrong! Try later");
       setLoading(false);
     }
   };
@@ -63,46 +66,55 @@ const SpeechPlayground = () => {
   return (
     <div className="w-full h-full flex flex-col">
       <InputGroup className="min-h-0 bg-background! max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-        {/* <InputGroupAddon align={"block-start"} className="border-b">
-        <Link href="/">
-          <Button size={"icon"} variant={"secondary"}>
-            <ArrowLeft />
-          </Button>
-        </Link>
-      </InputGroupAddon> */}
+       
         <InputGroupTextarea
           onChange={(e) => setText(e.target.value)}
           placeholder="Start type here or paste..."
           className=" h-full pt-5 px-10 scroll-fade scrollbar-thin scrollbar-thumb-accent text-sm text-balance"
         />
-        <InputGroupAddon align={"block-end"} className="flex flex-col px-0">
-          <div className="flex items-center justify-between w-full px-2">
-            <div>
-              <ChooseVoice
-                selectedVoice={selectedVoice}
-                setSelectedVoice={setSelectedVoice}
-              />
-            </div>
-            <div className="flex justify-end gap-3 items-center">
-              <span className="text-muted-foreground text-sm">
-                {text.length}/ 5000
-              </span>
-              <Button
-                size={"lg"}
-                disabled={loading}
-                onClick={handleGenerate}
-                variant={"secondary"}
+        <InputGroupAddon
+          align={"block-end"}
+          className="flex flex-col px-0 pb-5"
+        >
+          <AnimatePresence>
+            {text && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                transition={{
+                  duration: 0.4,
+                }}
+                className="flex items-center justify-between w-full px-2"
               >
-                {loading ? (
-                  <>
-                    <Spinner /> Generating...
-                  </>
-                ) : (
-                  "Generate speech"
-                )}
-              </Button>
-            </div>
-          </div>
+                <div>
+                  <ChooseVoice
+                    selectedVoice={selectedVoice}
+                    setSelectedVoice={setSelectedVoice}
+                  />
+                </div>
+                <div className="flex justify-end gap-3 items-center">
+                  <span className="text-muted-foreground text-sm">
+                    {text.length}/ 5000
+                  </span>
+                  <Button
+                    size={"lg"}
+                    disabled={loading}
+                    onClick={handleGenerate}
+                    variant={"secondary"}
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner /> Generating...
+                      </>
+                    ) : (
+                      "Generate speech"
+                    )}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </InputGroupAddon>
       </InputGroup>
       {audioUrl && (

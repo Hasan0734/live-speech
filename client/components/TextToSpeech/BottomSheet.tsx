@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
-import CompactPlayer from "./CompactPlayer";
 import { VoiceInfo } from "@/lib/type";
 import ExpandedPlayer from "./ExpandedPlayer";
 
@@ -29,7 +28,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   isGenerating = false,
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const speedMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [expanded, setExpanded] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -39,8 +37,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
-
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   const hasAudio = Boolean(audioUrl);
 
@@ -149,23 +145,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   }, [audioUrl]);
 
-  useEffect(() => {
-    const handleOutsideClick = (event: globalThis.MouseEvent) => {
-      if (
-        speedMenuRef.current &&
-        !speedMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowSpeedMenu(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, []);
-
   const togglePlay = async (): Promise<void> => {
     const audio = audioRef.current;
 
@@ -202,68 +181,34 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   return (
     <div className="relative">
       <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" />
-      {/* 
-      <CompactPlayer
-        currentTime={currentTime}
-        duration={duration}
-        togglePlay={togglePlay}
-        voice={voice}
-        isAudioLoading={isAudioLoading}
-        isPlaying={isPlaying}
-        isGenerating={isGenerating}
-        setExpanded={setExpanded}
-        hasAudio={hasAudio}
-      /> */}
 
-      {!expanded && (
-     
-        <div className="absolute w-full bottom-1 0">
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="group mx-auto mb-3 flex w-full flex-col items-center"
-            aria-label="Collapse audio player"
+      <AnimatePresence>
+        {!expanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 260,
+              damping: 26,
+            }}
+            className="absolute w-full bottom-1 0"
           >
-            <span className="h-1 w-20 rounded-full bg-muted-foreground/20 transition-all group-hover:w-16 group-hover:bg-muted-foreground/40" />
-          </button>
-        </div>
-      )}
-      {expanded && (
-        <ExpandedPlayer
-          isGenerating={isGenerating}
-          isPlaying={isPlaying}
-          generatedAt={generatedAt}
-          setExpanded={setExpanded}
-          voice={voice}
-          duration={duration}
-          setCurrentTime={setCurrentTime}
-          audioRef={audioRef}
-          hasAudio={hasAudio}
-          downloadComplete={downloadComplete}
-          setShowSpeedMenu={setShowSpeedMenu}
-          setDownloadComplete={setDownloadComplete}
-          audioUrl={audioUrl}
-          fileName={fileName}
-          currentTime={currentTime}
-          buffered={buffered}
-          isAudioLoading={isAudioLoading}
-          togglePlay={togglePlay}
-        />
-      )}
-      {/* <AnimatePresence mode="wait">
-        {!expanded ? (
-          <CompactPlayer
-            currentTime={currentTime}
-            duration={duration}
-            togglePlay={togglePlay}
-            voice={voice}
-            isAudioLoading={isAudioLoading}
-            isPlaying={isPlaying}
-            isGenerating={isGenerating}
-            setExpanded={setExpanded}
-            hasAudio={hasAudio}
-          />
-        ) : (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="group mx-auto mb-3 flex w-full flex-col items-center"
+              aria-label="Collapse audio player"
+            >
+              <span className="h-1 w-20 rounded-full bg-muted-foreground/20 transition-all group-hover:w-16 group-hover:bg-muted-foreground/40" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {expanded && (
           <ExpandedPlayer
             isGenerating={isGenerating}
             isPlaying={isPlaying}
@@ -275,7 +220,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             audioRef={audioRef}
             hasAudio={hasAudio}
             downloadComplete={downloadComplete}
-            setShowSpeedMenu={setShowSpeedMenu}
             setDownloadComplete={setDownloadComplete}
             audioUrl={audioUrl}
             fileName={fileName}
@@ -285,7 +229,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             togglePlay={togglePlay}
           />
         )}
-      </AnimatePresence> */}
+      </AnimatePresence>
     </div>
   );
 };
