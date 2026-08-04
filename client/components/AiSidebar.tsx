@@ -182,9 +182,11 @@ const AiSidebar = () => {
             1,680 of 2,000 generations remaining this month.
           </p>
 
-          <Button className="w-full py-1.5 px-3  text-xs font-semibold rounded-lg shadow-sm transition-colors">
-            Upgrade Plan
-          </Button>
+          <Link href={"/upgrade"}>
+            <Button className="w-full py-1.5 px-3  text-xs font-semibold rounded-lg shadow-sm transition-colors">
+              Upgrade Plan
+            </Button>
+          </Link>
         </div>
 
         <div className="border-t p-2">
