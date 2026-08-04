@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+
 import Link from "next/link";
 import {
   Speech,
@@ -25,35 +26,35 @@ import {
 
 import UserProfile from "./UserProfile";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
 
 const AiSidebar = () => {
+  const pathname = usePathname();
+
+  console.log(pathname);
   const mainNavItems = [
     {
       id: "1",
       label: "Text to Speech",
-      url: "/dashboard/text-to-speech",
-      isActive: false,
+      url: "/text-to-speech",
       icon: Speech,
     },
     {
       id: "2",
       label: "Transcribe Audio",
-      url: "/dashboard/transcribe",
-      isActive: false,
+      url: "/transcribe",
       icon: MicVocal,
     },
     {
       id: "3",
-      label: "Prompt Studio",
-      url: "/dashboard/prompts",
-      isActive: true,
+      label: "Generate Prompts",
+      url: "/prompt-generation",
       icon: Sparkles,
     },
     {
       id: "4",
       label: "Image Generator",
-      url: "/dashboard/image-generator",
-      isActive: false,
+      url: "/image-generator",
       icon: ImageIcon,
     },
   ];
@@ -63,14 +64,12 @@ const AiSidebar = () => {
       id: "5",
       label: "Activity History",
       url: "/dashboard/history",
-      isActive: false,
       icon: History,
     },
     {
       id: "6",
       label: "Settings",
       url: "/dashboard/settings",
-      isActive: false,
       icon: Settings,
     },
   ];
@@ -80,11 +79,9 @@ const AiSidebar = () => {
       variant="sidebar"
       className="border-r border-border bg-card text-card-foreground select-none"
     >
-      {/* Brand Header - Clean & Enterprise-Ready */}
       <SidebarHeader className="h-14 px-4 flex flex-row items-center border-b border-border/60">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background font-bold text-xs shadow-sm">
-            {/* <Terminal className="h-4 w-4" /> */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -103,9 +100,7 @@ const AiSidebar = () => {
         </div>
       </SidebarHeader>
 
-      {/* Main Navigation Content */}
       <SidebarContent className=" py-4 space-y-6">
-        {/* Generative Tools */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground px-2 mb-1.5">
             Generation
@@ -118,7 +113,7 @@ const AiSidebar = () => {
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
                       asChild
-                      isActive={item.isActive}
+                      isActive={item.url === pathname}
                       className="h-9 px-2.5 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:font-semibold"
                     >
                       <Link
@@ -136,7 +131,6 @@ const AiSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Workspace Management */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground px-2 mb-1.5">
             Workspace
@@ -149,7 +143,7 @@ const AiSidebar = () => {
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
                       asChild
-                      isActive={item.isActive}
+                      isActive={item.url === pathname}
                       className="h-9 px-2.5 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                     >
                       <Link
@@ -168,7 +162,6 @@ const AiSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Professional Footer User Profile Dropdown */}
       <SidebarFooter className="p-0">
         <div className="rounded-xl p-4 relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
@@ -181,7 +174,6 @@ const AiSidebar = () => {
             <span className="text-xs font-semibold text-foreground">84%</span>
           </div>
 
-          {/* Custom Progress Bar */}
           <div className="w-full bg-accent h-1.5 rounded-full overflow-hidden mb-2.5">
             <div className="bg-primary h-full rounded-full w-[84%]" />
           </div>

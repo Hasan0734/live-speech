@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 const TextToSpeech = () => {
   return (
-      <div className="relative h-screen flex px-4 md:px-0">
-        <SpeechPlayground />
+    <div className="relative h-screen flex px-4 md:px-0">
+      <SpeechPlayground />
     </div>
   );
 };
