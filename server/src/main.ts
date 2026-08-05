@@ -4,8 +4,11 @@ import Fastify from 'fastify';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import socketIo from "./realtime/socket";
 import cors from "@fastify/cors"
+import multipart from '@fastify/multipart'
 import { websocketRoutes } from './routes/websocket';
 import { TextToSpeech } from './routes/text-to-speech';
+import { UploadAudio } from './routes/upload-audio';
+
 
 
 
@@ -17,13 +20,21 @@ export async function buildApp() {
     await app.register(cors, {
         origin: "*"
     })
+    await app.register(multipart, {
+        limits: {
+            fileSize: 50 * 1024 * 1024, // 50MB limit max
+        },
+    })
 
     await app.register(socketIo, {
         path: "/ws/live",
     });
 
-   await app.register(websocketRoutes)
-   await app.register(TextToSpeech)
+
+
+    await app.register(websocketRoutes)
+    await app.register(TextToSpeech)
+    await app.register(UploadAudio)
 
     // app.register(async function (fastify) {
     //     // Define WebSocket route for Next.js clients

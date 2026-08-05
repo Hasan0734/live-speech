@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { GoogleGenAI, Modality } from "@google/genai";
 
-const getAi = () => {
+export const getAi = () => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         console.warn("GEMINI_API_KEY environment variable is not set.")
@@ -66,7 +66,6 @@ export async function TextToSpeech(app: FastifyInstance) {
         }
 
         try {
-            console.log({voice})
             const ai = getAi()
             const response = await ai.models.generateContent({
                 model: "gemini-3.1-flash-tts-preview",
@@ -81,17 +80,22 @@ export async function TextToSpeech(app: FastifyInstance) {
                 }
 
             });
+
             const candidatePart = response.candidates?.[0]?.content?.parts?.[0];
             const base64Audio = candidatePart?.inlineData?.data;
             const rawMimeType = candidatePart?.inlineData?.mimeType || "audion/pcm;rate=24000"
             if (!base64Audio) {
-                return replay.code(500).send({ error: "No audio data received from Gemini TTS model." })
+                return replay.code(404).send({ error: "No audio data received from Gemini TTS model." })
             }
             let audioUrl = createWavBuffer(rawMimeType, base64Audio);
             replay.code(200).send({ audioUrl, voiceUsed: voice, textLength: text.length });
 
         } catch (error: any) {
-            console.error(error)
+
+            const err = JSON.parse(error.message)
+            console.error(err.error.message)
+
+            replay.code(500).send({ status: err.error.status, message: "Interval server error" })
             app.log.info("Sever error", error.message)
         }
 

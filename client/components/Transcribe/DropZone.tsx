@@ -8,14 +8,12 @@ interface DropZoneProps {
 }
 
 const DropZone = ({ onFileSelect }: DropZoneProps) => {
-  const [fileName, setFileName] = useState("");
+  //   const [fileName, setFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
     if (!file) return;
-    setFileName(file.name);
-
     onFileSelect(file);
   };
 
@@ -62,9 +60,7 @@ const DropZone = ({ onFileSelect }: DropZoneProps) => {
       </div>
 
       <h3 className="text-base font-semibold mb-1">
-        {fileName
-          ? `Selected: ${fileName}`
-          : "Drop audio here or click to browse"}
+        Drop audio here or click to browse
       </h3>
       <p className="text-xs text-muted-foreground mb-6">
         MP3 · WAV · M4A · OGG · FLAC · WebM · Max 50MB

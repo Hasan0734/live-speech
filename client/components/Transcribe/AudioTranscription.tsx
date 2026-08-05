@@ -8,31 +8,73 @@ import SelectLanguage from "./SelectLanguage";
 import { Button } from "../ui/button";
 import AudioPreview from "./AudioPreview";
 import { AnimatePresence } from "motion/react";
+import axios from "axios";
+import { API_URL } from "@/lib/utils";
+import { toast } from "sonner";
+
+const steps = [
+  { number: "1", label: "Upload audio", active: true },
+  { number: "2", label: "Select language", active: false },
+  { number: "3", label: "Transcribe", active: false },
+  { number: "4", label: "Whisper detects pauses", active: false },
+  { number: "5", label: "Download transcript", active: false },
+];
 
 export default function AudioTranscription() {
   const [selectedMode, setSelectedMode] = useState("fast");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioSrc, setAudioSrc] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadFinished, setUploadFinished] = useState(false);
 
-  // Steps data for the header badge list
-  const steps = [
-    { number: "1", label: "Upload audio", active: true },
-    { number: "2", label: "Select language", active: false },
-    { number: "3", label: "Transcribe", active: false },
-    { number: "4", label: "Whisper detects pauses", active: false },
-    { number: "5", label: "Download transcript", active: false },
-  ];
+  const [uploadResult, setUploadResult] = useState(null);
 
-  const onFileSelect = (file: File) => {
+  const onFileSelect = async (file: File) => {
+    if (file.type.startsWith("video")) {
+      toast.error("Accept only audio, type WAV, MP3");
+      return;
+    }
+
+    setIsUploading(true);
     setAudioFile(file);
     const audioUrl = URL.createObjectURL(file);
     setAudioSrc(audioUrl);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await axios.post(`${API_URL}/api/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (event) => {
+          const total = event.total || 1;
+          const currentPercentage = Math.round((event.loaded * 100) / total);
+          console.log(currentPercentage);
+          setUploadProgress(currentPercentage);
+        },
+      });
+
+      toast.success("File uploaded.");
+      setUploadFinished(true);
+    } catch (error) {
+      console.log(error);
+      toast.error("Upload failed. Try again.");
+      setIsUploading(false);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const clearAudioState = () => {
     setAudioFile(null);
     setAudioSrc("");
   };
+
+
+  console.log(uploadProgress)
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
@@ -66,6 +108,9 @@ export default function AudioTranscription() {
             clearAudioState={clearAudioState}
             audioSrc={audioSrc}
             audioFile={audioFile}
+            uploadProgress={uploadProgress}
+            uploadFinished={uploadFinished}
+            isUploading={isUploading}
           />
         ) : (
           <DropZone onFileSelect={onFileSelect} />
@@ -84,6 +129,7 @@ export default function AudioTranscription() {
         <SelectLanguage />
         <div className="sm:col-span-3">
           <Button
+            disabled
             size={"lg"}
             className="w-full h-12  font-medium text-base py-3.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
           >

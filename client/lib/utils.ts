@@ -27,10 +27,10 @@ export const formatDuration = (time: number): string => {
   const minutes = Math.floor(time / 60);
   const seconds = Math.floor(time % 60);
 
-  if (!seconds) {
+  if (!minutes) {
     return `${seconds}s`
   }
-  if (!minutes) {
+  if (!seconds) {
     return `${minutes}m`
   }
 
