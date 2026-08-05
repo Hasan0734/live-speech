@@ -63,7 +63,6 @@ const UpgradePlan = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-4 lg:py-10 lg:px-16 w-full select-none space-y-8">
-      {/* Header & Subtitle */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Upgrade Plan
@@ -74,7 +73,6 @@ const UpgradePlan = () => {
         </p>
       </div>
 
-      {/* Banner Notice */}
       <div className="rounded-xl border border-border/60 bg-card p-2 text-sm text-foreground flex items-center gap-3 shadow-xs">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
           <Sparkles className="h-4 w-4" />
@@ -86,7 +84,6 @@ const UpgradePlan = () => {
         </p>
       </div>
 
-      {/* Billing Cycle Toggle Switch */}
       <div className="flex justify-center items-center my-6">
         <div className="inline-flex items-center p-1 rounded-full bg-muted border border-border/60">
           <button
@@ -136,14 +133,12 @@ const UpgradePlan = () => {
                   : "bg-card text-card-foreground border border-border/80 shadow-xs hover:border-border"
               }`}
             >
-              {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-3 right-6 bg-secondary text-primary text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
                   Popular
                 </div>
               )}
 
-              {/* Plan Header Info */}
               <div className="space-y-4">
                 <div>
                   <h3
@@ -172,7 +167,6 @@ const UpgradePlan = () => {
                   className={`h-px w-full ${plan.popular ? "bg-zinc-800" : "bg-border/60"}`}
                 />
 
-                {/* Features List */}
                 <ul className="space-y-3">
                   {plan.features.map((feature, fIndex) => (
                     <li
@@ -194,7 +188,6 @@ const UpgradePlan = () => {
                 </ul>
               </div>
 
-              {/* Action Button */}
               <div className="pt-8">
                 <Button
                   variant={plan.popular ? "secondary" : "outline"}
@@ -212,7 +205,6 @@ const UpgradePlan = () => {
         })}
       </div>
 
-      {/* Footer Disclaimer */}
       <div className="text-center pt-1">
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           Payments are securely processed via Paddle. Accepts all major cards

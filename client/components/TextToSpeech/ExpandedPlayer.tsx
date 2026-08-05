@@ -420,34 +420,3 @@ const ExpandedPlayer = ({
 };
 
 export default ExpandedPlayer;
-
-const GeneratingState: React.FC = () => {
-  return (
-    <div className="mt-5 rounded-xl border bg-muted/30 px-4 py-4">
-      <div className="flex items-center gap-3">
-        <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-
-        <div className="flex-1">
-          <p className="text-xs font-medium">Creating speech audio</p>
-
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Processing text and synthesizing the selected voice
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-        <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: "300%" }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="h-full w-1/3 rounded-full bg-primary"
-        />
-      </div>
-    </div>
-  );
-};

@@ -6,9 +6,13 @@ import ModeSelection from "./ModeSelection";
 import DropZone from "./DropZone";
 import SelectLanguage from "./SelectLanguage";
 import { Button } from "../ui/button";
+import AudioPreview from "./AudioPreview";
+import { AnimatePresence } from "motion/react";
 
 export default function AudioTranscription() {
   const [selectedMode, setSelectedMode] = useState("fast");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioSrc, setAudioSrc] = useState<string>("");
 
   // Steps data for the header badge list
   const steps = [
@@ -18,6 +22,17 @@ export default function AudioTranscription() {
     { number: "4", label: "Whisper detects pauses", active: false },
     { number: "5", label: "Download transcript", active: false },
   ];
+
+  const onFileSelect = (file: File) => {
+    setAudioFile(file);
+    const audioUrl = URL.createObjectURL(file);
+    setAudioSrc(audioUrl);
+  };
+
+  const clearAudioState = () => {
+    setAudioFile(null);
+    setAudioSrc("");
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
@@ -45,7 +60,17 @@ export default function AudioTranscription() {
         ))}
       </div>
 
-      <DropZone onFileSelect={() => {}} />
+      <AnimatePresence>
+        {audioFile ? (
+          <AudioPreview
+            clearAudioState={clearAudioState}
+            audioSrc={audioSrc}
+            audioFile={audioFile}
+          />
+        ) : (
+          <DropZone onFileSelect={onFileSelect} />
+        )}
+      </AnimatePresence>
 
       <ModeSelection />
 

@@ -19,6 +19,26 @@ export const formatTime = (time: number): string => {
 };
 
 
+export const formatDuration = (time: number): string => {
+  if (!Number.isFinite(time) || time < 0) {
+    return "0:00";
+  }
+
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+
+  if (!seconds) {
+    return `${seconds}s`
+  }
+  if (!minutes) {
+    return `${minutes}m`
+  }
+
+  return `${minutes}m ${seconds}s`;
+
+};
+
+
 export function pcmToWavDataUri(pcmBytes: Uint8Array, sampleRate = 24000): string {
   const numChannels = 1;
   const bitsPerSample = 16;

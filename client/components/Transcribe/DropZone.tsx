@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Upload } from "lucide-react";
-import React, { ChangeEvent, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { motion } from "motion/react";
 
 interface DropZoneProps {
   onFileSelect: (file: File) => void;
@@ -12,11 +13,22 @@ const DropZone = ({ onFileSelect }: DropZoneProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
-    if (file) setFileName(file.name);
+    if (!file) return;
+    setFileName(file.name);
+
+    onFileSelect(file);
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{
+        type: "spring",
+        damping: 50,
+        stiffness: 100,
+      }}
       onClick={() => inputRef?.current?.click()}
       onDragOver={(e) => {
         e.preventDefault();
@@ -68,7 +80,7 @@ const DropZone = ({ onFileSelect }: DropZoneProps) => {
         </button>
         <span className="text-slate-300 font-normal">for best results.</span>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
