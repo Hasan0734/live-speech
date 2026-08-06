@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Upload, Zap, Target, Info, ChevronDown } from "lucide-react";
 import { Badge } from "../ui/badge";
 import ModeSelection from "./ModeSelection";
@@ -20,15 +20,20 @@ const steps = [
   { number: "5", label: "Download transcript", active: false },
 ];
 
+type UploadResult = {
+  key: string | null;
+  uploading: boolean;
+};
+
 export default function AudioTranscription() {
-  const [selectedMode, setSelectedMode] = useState("fast");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioSrc, setAudioSrc] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadFinished, setUploadFinished] = useState(false);
 
-  const [uploadResult, setUploadResult] = useState(null);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const cancelTracker = useRef<AbortController | null>(null);
 
   const onFileSelect = async (file: File) => {
     if (file.type.startsWith("video")) {
@@ -44,37 +49,61 @@ export default function AudioTranscription() {
     const formData = new FormData();
     formData.append("file", file);
 
+    cancelTracker.current = new AbortController();
+
     try {
-      await axios.post(`${API_URL}/api/upload`, formData, {
+      setUploadResult({ key: null, uploading: true });
+      const res = await axios.post(`${API_URL}/api/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        signal: cancelTracker.current.signal,
         onUploadProgress: (event) => {
           const total = event.total || 1;
           const currentPercentage = Math.round((event.loaded * 100) / total);
-          console.log(currentPercentage);
           setUploadProgress(currentPercentage);
         },
       });
 
+      if (res.data.key) {
+        setUploadResult({ key: res.data.key, uploading: false });
+      }
+
       toast.success("File uploaded.");
       setUploadFinished(true);
-    } catch (error) {
-      console.log(error);
-      toast.error("Upload failed. Try again.");
+    } catch (error: any) {
       setIsUploading(false);
+      if ((error.message = "canceled")) {
+        return;
+      }
+      toast.error("Upload failed. Try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const clearAudioState = () => {
-    setAudioFile(null);
-    setAudioSrc("");
+    if (cancelTracker.current) {
+      cancelTracker.current.abort();
+      cancelTracker.current = null;
+      setAudioFile(null);
+      setAudioSrc("");
+      setUploadProgress(0);
+      setUploadResult(null);
+    }
   };
 
+  const handleTranscribe = async () => {
+    if (!uploadResult?.key) return;
 
-  console.log(uploadProgress)
+    const data = {
+      key: uploadResult.key,
+      mimetype: audioFile?.type,
+    };
+    const res = await axios.post(`${API_URL}/api/transcribe`, data);
+
+    console.log(res.data);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
@@ -111,6 +140,7 @@ export default function AudioTranscription() {
             uploadProgress={uploadProgress}
             uploadFinished={uploadFinished}
             isUploading={isUploading}
+            uploadResult={uploadResult}
           />
         ) : (
           <DropZone onFileSelect={onFileSelect} />
@@ -129,11 +159,22 @@ export default function AudioTranscription() {
         <SelectLanguage />
         <div className="sm:col-span-3">
           <Button
-            disabled
+            onClick={handleTranscribe}
+            disabled={
+              uploadResult === null
+                ? true
+                : uploadResult.uploading
+                  ? true
+                  : false
+            }
             size={"lg"}
             className="w-full h-12  font-medium text-base py-3.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
           >
-            Transcribe Audio
+            {uploadResult === null
+              ? "Transcribe Audio"
+              : uploadResult.uploading
+                ? "Wait for uploading"
+                : "Transcribe Audio"}
           </Button>
         </div>
       </div>

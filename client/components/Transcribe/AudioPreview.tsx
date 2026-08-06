@@ -4,6 +4,11 @@ import { Button } from "../ui/button";
 import { motion } from "motion/react";
 import { formatDuration, formatTime } from "@/lib/utils";
 
+interface UploadResult {
+  key: string | null;
+  uploading: boolean;
+}
+
 interface AudioPreviewProps {
   audioFile: File;
   audioSrc: string;
@@ -11,6 +16,7 @@ interface AudioPreviewProps {
   uploadProgress: number;
   uploadFinished: boolean;
   isUploading: boolean;
+  uploadResult: UploadResult | null;
 }
 
 const AudioPreview = ({
@@ -20,6 +26,7 @@ const AudioPreview = ({
   isUploading,
   uploadProgress,
   uploadFinished,
+  uploadResult,
 }: AudioPreviewProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
@@ -58,7 +65,9 @@ const AudioPreview = ({
           </div>
           <div className="space-y-1">
             <h3>{audioFile.name}</h3>
-            <p className="text-sm text-muted-foreground">{duration && formatDuration(duration)} · ~ 5 credits needed</p>
+            <p className="text-sm text-muted-foreground">
+              {duration && formatDuration(duration)} · ~ 5 credits needed
+            </p>
           </div>
         </div>
         <div>
@@ -73,7 +82,7 @@ const AudioPreview = ({
         </div>
       </div>
       <audio ref={audioRef} src={audioSrc} controls className="w-full p-1.5" />
-      {isUploading && (
+      {uploadProgress !== 100 && (
         <div className="flex flex-col gap-1">
           <div className="flex justify-between itesm-center text-sm">
             <p className="text-muted-foreground">Uploading audio...</p>
@@ -89,7 +98,7 @@ const AudioPreview = ({
           </div>
         </div>
       )}
-      {uploadFinished && (
+      {uploadFinished && uploadResult?.key && (
         <div>
           <p className="text-xs text-green-500 flex items-center gap-1">
             <CheckIcon size={14} /> Uploaded — ready to transcribe

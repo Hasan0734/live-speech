@@ -8,8 +8,8 @@ import multipart from '@fastify/multipart'
 import { websocketRoutes } from './routes/websocket';
 import { TextToSpeech } from './routes/text-to-speech';
 import { UploadAudio } from './routes/upload-audio';
-
-
+import s3Plugin from './plugins/s3';
+import { Transcribe } from './routes/transcribe';
 
 
 export async function buildApp() {
@@ -20,12 +20,15 @@ export async function buildApp() {
     await app.register(cors, {
         origin: "*"
     })
+
     await app.register(multipart, {
         limits: {
             fileSize: 50 * 1024 * 1024, // 50MB limit max
         },
     })
 
+
+    await app.register(s3Plugin)
     await app.register(socketIo, {
         path: "/ws/live",
     });
@@ -35,6 +38,7 @@ export async function buildApp() {
     await app.register(websocketRoutes)
     await app.register(TextToSpeech)
     await app.register(UploadAudio)
+    await app.register(Transcribe)
 
     // app.register(async function (fastify) {
     //     // Define WebSocket route for Next.js clients

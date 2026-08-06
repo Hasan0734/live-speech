@@ -1,5 +1,4 @@
 import type { FastifyInstance } from "fastify";
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage';
 import { v4 as uuidv4 } from "uuid";
 
@@ -10,19 +9,6 @@ const ALLOWED_MIME_TYPES = ['audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3
 
 
 export async function UploadAudio(app: FastifyInstance) {
-
-
-    const s3 = new S3Client({
-        forcePathStyle: true, // Required for Supabase S3 API compatibility
-        region: process.env.SUPBASE_REGION,
-        endpoint: process.env.SUPABASE_ENDPOINT, // S3 URL from settings
-        credentials: {
-            accessKeyId: process.env.SUPABASE_ACCESS_KEY!,
-            secretAccessKey: process.env.SUPABASE_SECRET_ACCESS!,
-        },
-    })
-
-
 
     app.post("/api/upload", async (req, reply) => {
 
@@ -41,18 +27,18 @@ export async function UploadAudio(app: FastifyInstance) {
 
 
         try {
-        
+
+            console.log(data)
 
             const uniqueFilename = uuidv4()
 
 
-            // Pass the raw data.file stream straight into the S3 Upload manager
             const parallelUpload = new Upload({
-                client: s3,
+                client: app.s3,
                 params: {
                     Bucket: 'uploads-audio',
                     Key: uniqueFilename,
-                    Body: data.file, // Native stream input 
+                    Body: data.file,
                     ContentType: data.mimetype,
                 },
                 queueSize: 4,
@@ -60,8 +46,7 @@ export async function UploadAudio(app: FastifyInstance) {
             });
 
             await parallelUpload.done();
-            const encodedFilename = encodeURIComponent(uniqueFilename);
-            // const publicUrl = `https://eftrlayngrniqterscdf.supabase.co/storage/v1/object/public/uploads-audio/${encodedFilename}`;
+            // const encodedFilename = encodeURIComponent(uniqueFilename);
 
             return {
                 message: "File uploaded successfully",
@@ -76,3 +61,6 @@ export async function UploadAudio(app: FastifyInstance) {
 
     })
 }
+
+
+// const publicUrl = `https://eftrlayngrniqterscdf.supabase.co/storage/v1/object/public/uploads-audio/${encodedFilename}`;
