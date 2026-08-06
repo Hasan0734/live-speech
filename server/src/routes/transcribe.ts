@@ -1,7 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { getAi } from "./text-to-speech";
 import path from 'path';
-import os from 'os';
 import fs from 'fs'
 import { pipeline } from "stream/promises";
 import { GetObjectCommand } from '@aws-sdk/client-s3';
@@ -27,8 +26,9 @@ export async function Transcribe(app: FastifyInstance) {
 
 
     app.post("/api/transcribe", async (req, reply) => {
-        const ai = getAi()
+        const ai = getAi();
         const { key, mimetype } = req.body as { key: string; mimetype: string };
+
         if (!key || !mimetype) {
             return reply.code(400).send({ error: "Missing required key or mimetype parameters." });
         }
@@ -37,6 +37,7 @@ export async function Transcribe(app: FastifyInstance) {
         let geminiFileRef: any = null;
 
         try {
+            // 1. Fetch file stream from private S3 bucket
             const s3Response = await app.s3.send(new GetObjectCommand({
                 Bucket: 'uploads-audio',
                 Key: key
@@ -49,42 +50,80 @@ export async function Transcribe(app: FastifyInstance) {
             tempFilePath = path.join(process.cwd(), `temp_${key}`);
             await pipeline(s3Response.Body as any, fs.createWriteStream(tempFilePath));
 
+            // 2. Upload file to Google Gemini's File API sandbox
             geminiFileRef = await ai.files.upload({
                 file: tempFilePath,
                 config: {
                     mimeType: mimetype || "audio/mpeg"
-
                 }
             });
 
-            const response = await ai.interactions.create({
+            // 3. Configure HTTP response headers for Server-Sent Events (SSE) streaming 
+            reply.raw.writeHead(200, {
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Access-Control-Allow-Origin": "*", // Match frontend URL or leave wildcard if debugging
+            });
+
+            // 4. Initialize Gemini native chunk streaming
+            const responseStream = await ai.interactions.create({
                 model: 'gemini-2.5-flash',
-                system_instruction: systemInstruction,
                 input: [
+                    { type: "text", text: "Please generate the timestamped transcript for this audio following your formatting rules" },
+
                     {
                         type: "audio",
                         uri: geminiFileRef.uri,
                         mime_type: geminiFileRef.mimeType
                     }
-
                 ],
-                // stream: true
+
+                system_instruction: systemInstruction,
+                stream: true
             });
 
-            console.log({ response })
-
-            return { success: true, text: response.output_text };
 
 
-            // const response = await ai.models.generateContent({
-            //     model: "",
-            //     contents: [{ parts: [{ text: "" }] }],
-            //     config: {
-
+            for await (const event of responseStream) {
+                if (event.event_type === "step.delta") {
+                    if (event.delta.type === "text") {
+                        // process.stdout.write(event.delta.text);
+                        console.log(event)
+                        console.log(event.delta.text)
+                        reply.raw.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
+                    }
+                }
+            }
+            reply.raw.write(`data: [DONE]\n\n`);
+            reply.raw.end();
+            // // 5. Intercept streaming fragments and pump them directly down the SSE socket pipe
+            // for await (const chunk of responseStream) {
+            //     if (chunk.text) {
+            //         // SSE format requires starting with "data: " and ending with two newlines (\n\n)
+            //         reply.raw.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
             //     }
-            // })
-        } catch (error) {
-            console.log(error)
+            // }
+
+            // // 6. Signal to frontend that the stream is complete
+            // reply.raw.write(`data: [DONE]\n\n`);
+            // reply.raw.end();
+
+        } catch (error: any) {
+            // app.log.error(error);
+            // Fallback response if failure happens before streaming protocol starts
+            if (!reply.raw.writableEnded) {
+                reply.raw.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+                reply.raw.end();
+            }
+        } finally {
+            // // 7. Cleanup tasks: delete file from server memory and Gemini storage
+            if (tempFilePath && fs.existsSync(tempFilePath)) {
+                fs.unlinkSync(tempFilePath);
+            }
+            if (geminiFileRef?.name) {
+                await ai.files.delete({ name: geminiFileRef.name }).catch(() => null);
+            }
         }
 
     })

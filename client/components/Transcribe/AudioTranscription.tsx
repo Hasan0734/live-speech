@@ -31,6 +31,9 @@ export default function AudioTranscription() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadFinished, setUploadFinished] = useState(false);
+  const [transcriptionText, setTranscriptionText] = useState("");
+  const [status, setStatus] = useState("");
+  const [transcribing, setTranscribing] = useState(false);
 
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const cancelTracker = useRef<AbortController | null>(null);
@@ -96,14 +99,58 @@ export default function AudioTranscription() {
   const handleTranscribe = async () => {
     if (!uploadResult?.key) return;
 
+    setTranscribing(true);
     const data = {
       key: uploadResult.key,
       mimetype: audioFile?.type,
     };
-    const res = await axios.post(`${API_URL}/api/transcribe`, data);
 
-    console.log(res.data);
+    setTranscriptionText("");
+    setStatus("transcribing");
+    try {
+      const response = await fetch(`${API_URL}/api/transcribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.body) return;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunkString = decoder.decode(value);
+        const lines = chunkString.split("\n");
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const rawData = line.replace("data: ", "").trim();
+            if (rawData === "[DONE]") {
+              setStatus("success");
+              break;
+            }
+
+            try {
+              const parsed = JSON.parse(rawData);
+              if (parsed.text) {
+                // Smoothly append the text block to your UI transcription string state
+                setTranscriptionText((prev) => prev + parsed.text);
+              }
+            } catch (e) {
+              // Ignore incomp
+            }
+          }
+        }
+      }
+    } catch (err) {
+      setStatus("error");
+    } finally {
+      setTranscribing(false);
+    }
   };
+
+  console.log(transcriptionText);
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
@@ -165,7 +212,9 @@ export default function AudioTranscription() {
                 ? true
                 : uploadResult.uploading
                   ? true
-                  : false
+                  : transcribing
+                    ? true
+                    : false
             }
             size={"lg"}
             className="w-full h-12  font-medium text-base py-3.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
