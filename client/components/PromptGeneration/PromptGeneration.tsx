@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -22,62 +22,84 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-interface TIMELINE {
+interface TimelineSegment {
   time: string;
   prompt: string;
 }
 
-const PromptGeneration = () => {
+const VIDEO_STYLES = [
+  { id: "doodle", name: "Doodle / Whiteboard" },
+  { id: "2d-cartoon", name: "2D Cartoon" },
+  { id: "2d-cinematic", name: "2D Cinematic (Anime / Ghibli)" },
+  { id: "3d-stylized", name: "3D Stylized (Pixar style)" },
+  { id: "3d-realistic", name: "3D Realistic (Cinematic CGI)" },
+  { id: "live-action", name: "Live Action Realistic" },
+  { id: "historical", name: "Historical / Ancient" },
+  { id: "scifi", name: "Fantasy / Sci-Fi Concept Art" },
+  { id: "pixel", name: "Retro / Pixel Art" },
+  { id: "abstract", name: "Abstract / Artistic" },
+] as const;
+
+const MAX_CHARS = 20000;
+
+const PromptGeneration: React.FC = () => {
   const [script, setScript] = useState("");
-  const [style, setStyle] = useState("");
+  const [style, setStyle] = useState<string>("2d-cinematic");
   const [consistency, setConsistency] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<TIMELINE[] | null>(null);
+  const [results, setResults] = useState<TimelineSegment[] | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const MAX_CHARS = 20000;
+  // Read from session storage on mount
+  useEffect(() => {
+    const storedScript = sessionStorage.getItem("promptScript");
+    if (storedScript) {
+      startTransition(() => {
+        setScript(storedScript);
+      });
+      sessionStorage.removeItem("promptScript");
+    }
+  }, []);
 
   const handleGenerate = async () => {
-    if (!script.trim()) return;
+    if (!script.trim() || loading) return;
 
     setLoading(true);
 
-    // Simulate generation process (Replace with your actual API call)
-    setTimeout(() => {
+    // Simulate generation process (Replace with your actual API integration)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       setResults([
         {
           time: "[0:00]",
-          prompt:
-            "Cinematic establishing shot of an ancient valley, misty morning light, highly detailed historical realism, 8k resolution",
+          prompt: `Cinematic establishing shot of an ancient valley in ${style} style, misty morning light, highly detailed historical realism, 8k resolution`,
         },
         {
           time: "[0:06]",
-          prompt:
-            "Close up of an archaeologist examining weathered stone artifacts, dramatic side lighting, rich textures, professional cinematography",
+          prompt: `Close up of an archaeologist examining weathered stone artifacts, dramatic side lighting, rich textures, professional cinematography`,
         },
         {
           time: "[0:16]",
-          prompt:
-            "Abstract visual representation of thought and memory, glowing ethereal particles weaving through ancient ruins, cosmic atmosphere",
+          prompt: `Abstract visual representation of thought and memory, glowing ethereal particles weaving through ancient ruins, cosmic atmosphere`,
         },
       ]);
+    } catch (error) {
+      console.error("Failed to generate prompts:", error);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
-  const handleCopy = (text: string, index: number | string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
+  const handleCopy = async (text: string, index: number | string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
   };
-
-  useEffect(() => {
-   // Read from session storage after component mounts on the client
-    const text = sessionStorage.getItem("promptScript") || "";
-    setScript(text);
-
-        sessionStorage.removeItem("promptScript")
-  }, []);
 
   return (
     <div className="max-w-3xl mx-auto p-6 lg:p-8 w-full select-none">
@@ -88,8 +110,7 @@ const PromptGeneration = () => {
             Generate Image Prompts
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Transform your timestamped scripts into production-ready visual
-            prompts.
+            Transform your timestamped scripts into production-ready visual prompts.
           </p>
         </div>
         {results && (
@@ -97,7 +118,7 @@ const PromptGeneration = () => {
             variant="outline"
             size="sm"
             onClick={() => setResults(null)}
-            className="gap-2"
+            className="gap-2 transition-all"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Editor
           </Button>
@@ -106,7 +127,7 @@ const PromptGeneration = () => {
 
       {!results ? (
         /* --- Input Form View --- */
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-200">
           {/* Script Textarea Input */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -127,7 +148,8 @@ const PromptGeneration = () => {
               id="script"
               placeholder="[0:00] Paste your script lines here with timestamps..."
               maxLength={MAX_CHARS}
-              className="min-h-55 max-h-55 resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
+              disabled={isPending}
+              className="min-h-55 max-h-55 focus-visible:ring-0  scrollbar-thin scrollbar-thumb-accent resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
             />
           </div>
 
@@ -137,30 +159,15 @@ const PromptGeneration = () => {
               Video Visual Style
             </Label>
             <Select value={style} onValueChange={setStyle}>
-              <SelectTrigger className="w-full h-11 rounded-xl border-border bg-card/50 text-foreground">
+              <SelectTrigger className="w-full h-11! rounded-xl border-border bg-card/50 text-foreground">
                 <SelectValue placeholder="Select your target video aesthetic..." />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border">
-                <SelectItem value="doodle">Doodle / Whiteboard</SelectItem>
-                <SelectItem value="2d-cartoon">2D Cartoon</SelectItem>
-                <SelectItem value="2d-cinematic">
-                  2D Cinematic (Anime / Ghibli)
-                </SelectItem>
-                <SelectItem value="3d-stylized">
-                  3D Stylized (Pixar style)
-                </SelectItem>
-                <SelectItem value="3d-realistic">
-                  3D Realistic (Cinematic CGI)
-                </SelectItem>
-                <SelectItem value="live-action">
-                  Live Action Realistic
-                </SelectItem>
-                <SelectItem value="historical">Historical / Ancient</SelectItem>
-                <SelectItem value="scifi">
-                  Fantasy / Sci-Fi Concept Art
-                </SelectItem>
-                <SelectItem value="pixel">Retro / Pixel Art</SelectItem>
-                <SelectItem value="abstract">Abstract / Artistic</SelectItem>
+              <SelectContent className="rounded-xl border-border p-1">
+                {VIDEO_STYLES.map((item) => (
+                  <SelectItem className="h-10!" key={item.id} value={item.id}>
+                    {item.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -173,8 +180,7 @@ const PromptGeneration = () => {
                   Character & Environment Consistency
                 </span>
                 <p className="text-xs text-muted-foreground">
-                  Lock core features to maintain visual continuity across scene
-                  cuts
+                  Lock core features to maintain visual continuity across scene cuts
                 </p>
               </div>
               <Switch checked={consistency} onCheckedChange={setConsistency} />
@@ -212,7 +218,7 @@ const PromptGeneration = () => {
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Generated Prompts ({results?.length} Segments)
+              Generated Prompts ({results.length} Segments)
             </h2>
             <Button
               size="sm"
@@ -221,7 +227,7 @@ const PromptGeneration = () => {
               onClick={() =>
                 handleCopy(
                   results.map((r) => `${r.time} ${r.prompt}`).join("\n"),
-                  "all",
+                  "all"
                 )
               }
             >

@@ -18,7 +18,7 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "../ui/input-group";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const steps = [
   { number: "1", label: "Upload audio", active: true },
@@ -39,7 +39,7 @@ export default function AudioTranscription() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadFinished, setUploadFinished] = useState(false);
-  const [transcriptionText, setTranscriptionText] = useState("");
+  const [transcriptionText, setTranscriptionText] = useState("Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc Hello world this new bangladesh and the artisc ");
   const [status, setStatus] = useState("");
   const [transcribing, setTranscribing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("");
@@ -280,14 +280,14 @@ export default function AudioTranscription() {
       {transcribing && <Transcribing />}
 
       {transcriptionText && (
-        <div className="mt-6 bg-accent p-2 rounded-xl">
+        <div className="mt-6 rounded-xl">
           {/* <div className="flex items-center justify-between mb-4">
             <Button>
               <Sparkles /> Generate prompt
             </Button>
           </div> */}
-          <InputGroup className="bg-background! max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-            <InputGroupTextarea />
+          <InputGroup className="bg-card max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:max-h-100 has-[[data-slot=input-group-control]:focus-visible]:scrollbar-thumb-accent">
+            <InputGroupTextarea value={transcriptionText} readOnly />
             <InputGroupAddon align={"block-start"}>
               <div className="flex  justify-between items-center w-full">
                 <InputGroupButton

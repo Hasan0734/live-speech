@@ -1,13 +1,19 @@
+import { Spinner } from "../ui/spinner";
 
 const Transcribing = () => {
   return (
-    <div className="bg-card p-5 rounded-xl mt-5 space-y-4">
+    <div className="bg-card p-5 rounded-xl mt-5  flex items-start gap-2">
       <div>
-        <h2 className="font-semibold text-sm">
-          We're working on transcribing it now!
-        </h2>
+        <Spinner className="size-10" />
       </div>
-      <div className="flex flex-col gap-1 ">
+
+      <div>
+        <div className="flex items-center">
+          <h2 className="font-semibold text-sm">
+            We're working on transcribing it now!
+          </h2>
+        </div>
+        {/* <div className="flex flex-col gap-1 ">
         <div className="flex justify-between itesm-center text-sm">
           <p className="text-muted-foreground">
             This usually takes a moment for longer audio...
@@ -22,9 +28,10 @@ const Transcribing = () => {
             }}
           />
         </div>
-      </div>
-      <div className="text-sm">
-        <p>We'll also email you a link to your transcript once it's ready.</p>
+      </div> */}
+        <div className="text-xs text-muted-foreground mt-2">
+          <p>We'll also email you a link to your transcript once it's ready.</p>
+        </div>
       </div>
     </div>
   );
