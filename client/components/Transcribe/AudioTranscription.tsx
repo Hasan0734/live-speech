@@ -11,6 +11,8 @@ import { AnimatePresence } from "motion/react";
 import axios from "axios";
 import { API_URL } from "@/lib/utils";
 import { toast } from "sonner";
+import Transcribing from "./Transcribing";
+import { Textarea } from "../ui/textarea";
 
 const steps = [
   { number: "1", label: "Upload audio", active: true },
@@ -150,7 +152,29 @@ export default function AudioTranscription() {
     }
   };
 
-  console.log(transcriptionText);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(transcriptionText);
+      toast.success("Text copied successfully!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      toast.error("Failed to copied text.");
+    }
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([transcriptionText], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${audioFile?.name}-transcribed.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
@@ -223,37 +247,35 @@ export default function AudioTranscription() {
               ? "Transcribe Audio"
               : uploadResult.uploading
                 ? "Wait for uploading"
-                : "Transcribe Audio"}
+                : transcribing
+                  ? "Transcribing"
+                  : "Transcribe Audio"}
           </Button>
         </div>
       </div>
 
-      <div className="bg-card p-5 rounded-xl mt-5 space-y-4">
-        <div>
-          <h2 className="font-semibold text-sm">
-            We're working on transcribing it now!
-          </h2>
-        </div>
-        <div className="flex flex-col gap-1 ">
-          <div className="flex justify-between itesm-center text-sm">
-            <p className="text-muted-foreground">
-              This usually takes a moment for longer audio...
-            </p>
-            <p>{uploadProgress}%</p>
+      {transcribing && <Transcribing />}
+
+      {transcriptionText && (
+        <div className="mt-6 bg-accent p-3 rounded-xl">
+          <div className="flex justify-end gap-2 mb-4">
+            <Button onClick={handleDownload} variant={"secondary"}>
+              Download
+            </Button>
+            <Button onClick={handleCopy} variant={"secondary"}>
+              Copy
+            </Button>
           </div>
-          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="absolute inset-y-0 left-0 rounded-full bg-primary"
-              style={{
-                width: `${10}%`,
-              }}
-            />
-          </div>
+          <Textarea
+            value={transcriptionText}
+            readOnly
+            name="script"
+            id="script"
+            placeholder="[0:00] Paste your script lines here with timestamps..."
+            className="min-h-55 max-h-100 focus-visible:ring-0 scrollbar-thin scrollbar-thumb-accent py-2 resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
+          />
         </div>
-        <div className="text-sm">
-          <p>We'll also email you a link to your transcript once it's ready.</p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

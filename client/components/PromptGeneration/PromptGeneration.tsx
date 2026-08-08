@@ -119,7 +119,7 @@ const PromptGeneration = () => {
               id="script"
               placeholder="[0:00] Paste your script lines here with timestamps..."
               maxLength={MAX_CHARS}
-              className="min-h-[220px] max-h-[220px] resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
+              className="min-h-55 max-h-55 resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
             />
           </div>
 

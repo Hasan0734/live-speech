@@ -89,13 +89,12 @@ export async function Transcribe(app: FastifyInstance) {
                 if (event.event_type === "step.delta") {
                     if (event.delta.type === "text") {
                         // process.stdout.write(event.delta.text);
-                        console.log(event)
-                        console.log(event.delta.text)
-                        reply.raw.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
+               
+                        reply.raw.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n\n`);
                     }
                 }
             }
-            reply.raw.write(`data: [DONE]\n\n`);
+            reply.raw.write(`data: [DONE]\n\n\n`);
             reply.raw.end();
             // // 5. Intercept streaming fragments and pump them directly down the SSE socket pipe
             // for await (const chunk of responseStream) {
