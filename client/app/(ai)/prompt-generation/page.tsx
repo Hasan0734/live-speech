@@ -6,7 +6,7 @@ const PromptGenerationPage = () => {
 
 
   return (
-    <div className="relative xl:h-screen flex px-4 md:px-0">
+    <div className="relative  flex px-4 md:px-0 ">
       <PromptGeneration />
     </div>
   );

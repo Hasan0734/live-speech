@@ -9,16 +9,16 @@ TARGET VIDEO VISUAL STYLE: ${style}
 CHARACTER & ENVIRONMENT CONSISTENCY: ${consistency ? "ENABLED. Ensure core character features, clothing, and environment aesthetics remain strictly consistent across all generated scene prompts." : "DISABLED. Each prompt can vary independently."}
 
 CRITICAL OUTPUT FORMATTING RULES:
-1. Return a valid JSON object containing objects with 'time' and 'prompt' keys.
-2. The 'time' value must match the exact timestamp provided in the script line (e.g., "[0:00]").
-3. The 'prompt' value must contain the detailed, high-quality image generation prompt tailored to the visual style.`;
+1. Output individual JSON objects one per line (NDJSON format). DO NOT wrap them in a JSON array [].
+2. DO NOT use markdown code blocks (\`\`\`json).
+3. Each line must be a valid JSON object matching this structure: {"time": "[0:00]", "prompt": "your prompt here"}`;
 }
 
 
-const promptSchema = z.array(z.object({
+const promptSchema = z.object({
     time: z.string().describe("The script time format like [0:00]."),
     prompt: z.string().describe("The prompt based on the script.")
-}))
+});
 
 export async function GeneratePrompts(app: FastifyInstance) {
 
@@ -42,7 +42,7 @@ export async function GeneratePrompts(app: FastifyInstance) {
 
 
             const responseStream = await ai.interactions.create({
-                model: 'gemini-3.6-flash',
+                model: 'gemini-2.5-flash',
                 input: [
                     { type: "text", text: `Please generate the image prompts for the following timestamped script:\n\n${script}` }
                 ],
@@ -55,6 +55,7 @@ export async function GeneratePrompts(app: FastifyInstance) {
                 stream: true
             });
 
+
             reply.raw.writeHead(200, {
                 "Content-Type": "text/event-stream",
                 "Cache-Control": "no-cache",
@@ -62,9 +63,18 @@ export async function GeneratePrompts(app: FastifyInstance) {
                 "Access-Control-Allow-Origin": "*", // Match frontend URL or leave wildcard if debugging
             });
 
+
             for await (const chunk of responseStream) {
+                if (chunk.event_type === "error") {
+                    reply.raw.write(JSON.stringify({
+                        error: "plan",
+                        message: "You exceeded your current quota."
+                    }));
+                    reply.raw.end();
+                    return;
+                }
                 if (chunk.event_type === "step.delta") {
-                    if (chunk.delta?.type === "text" && chunk.delta.text) {
+                    if (chunk.delta?.type === "text") {
                         reply.raw.write(chunk.delta.text);
                     }
                 }

@@ -22,6 +22,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { API_URL } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface TimelineSegment {
   time: string;
@@ -81,8 +82,15 @@ const PromptGeneration: React.FC = () => {
         }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error("Failed to generate prompts.");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Server responded with status ${response.status}`,
+        );
+      }
+
+      if (!response.body) {
+        throw new Error("Response body is missing.");
       }
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -94,36 +102,24 @@ const PromptGeneration: React.FC = () => {
 
         accumulatedJsonString += decoder.decode(value, { stream: true });
       }
-      const parsedData = JSON.parse(accumulatedJsonString) as TimelineSegment[];
+
+      const parsedData = JSON.parse(accumulatedJsonString);
+
+      if (parsedData?.error === "plan") {
+        toast.error(parsedData.message);
+        return;
+      }
+
       setResults(parsedData);
-    } catch (error) {
-      console.error("Failed to generate prompts:", error);
+    } catch (error: any) {
+      console.error("Prompt generation failed:", error);
+      toast.error(
+        error.message ||
+          "Failed to generate prompts due to an unexpected error.",
+      );
     } finally {
       setLoading(false);
     }
-  };
-
-  const parsePromptStream = (rawText: string): TimelineSegment[] => {
-    const lines = rawText.split("\n").filter((line) => line.trim() !== "");
-    const results: TimelineSegment[] = [];
-
-    // Regex to match timestamps like [0:00] or [12:34] at the start of a line
-    const regex = /^(\[\d+:\d+\])\s*(.*)$/;
-
-    for (const line of lines) {
-      const match = line.match(regex);
-      if (match) {
-        results.push({
-          time: match[1],
-          prompt: match[2],
-        });
-      } else if (results.length > 0) {
-        // Append text to the previous prompt if it wraps to a new line without a timestamp
-        results[results.length - 1].prompt += " " + line.trim();
-      }
-    }
-
-    return results;
   };
 
   const handleCopy = async (text: string, index: number | string) => {
