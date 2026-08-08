@@ -10,6 +10,7 @@ import { TextToSpeech } from './routes/text-to-speech';
 import { UploadAudio } from './routes/upload-audio';
 import s3Plugin from './plugins/s3';
 import { Transcribe } from './routes/transcribe';
+import { GeneratePrompts } from './routes/generate-prompt';
 
 
 export async function buildApp() {
@@ -39,6 +40,7 @@ export async function buildApp() {
     await app.register(TextToSpeech)
     await app.register(UploadAudio)
     await app.register(Transcribe)
+    await app.register(GeneratePrompts)
 
     // app.register(async function (fastify) {
     //     // Define WebSocket route for Next.js clients

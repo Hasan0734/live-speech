@@ -21,6 +21,7 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
+import { API_URL } from "@/lib/utils";
 
 interface TimelineSegment {
   time: string;
@@ -51,7 +52,6 @@ const PromptGeneration: React.FC = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Read from session storage on mount
   useEffect(() => {
     const storedScript = sessionStorage.getItem("promptScript");
     if (storedScript) {
@@ -66,29 +66,64 @@ const PromptGeneration: React.FC = () => {
     if (!script.trim() || loading) return;
 
     setLoading(true);
+    setResults(null);
 
-    // Simulate generation process (Replace with your actual API integration)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setResults([
-        {
-          time: "[0:00]",
-          prompt: `Cinematic establishing shot of an ancient valley in ${style} style, misty morning light, highly detailed historical realism, 8k resolution`,
+      const response = await fetch(`${API_URL}/api/generate-prompts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          time: "[0:06]",
-          prompt: `Close up of an archaeologist examining weathered stone artifacts, dramatic side lighting, rich textures, professional cinematography`,
-        },
-        {
-          time: "[0:16]",
-          prompt: `Abstract visual representation of thought and memory, glowing ethereal particles weaving through ancient ruins, cosmic atmosphere`,
-        },
-      ]);
+        body: JSON.stringify({
+          script,
+          style,
+          consistency,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to generate prompts.");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let accumulatedJsonString = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        accumulatedJsonString += decoder.decode(value, { stream: true });
+      }
+      const parsedData = JSON.parse(accumulatedJsonString) as TimelineSegment[];
+      setResults(parsedData);
     } catch (error) {
       console.error("Failed to generate prompts:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const parsePromptStream = (rawText: string): TimelineSegment[] => {
+    const lines = rawText.split("\n").filter((line) => line.trim() !== "");
+    const results: TimelineSegment[] = [];
+
+    // Regex to match timestamps like [0:00] or [12:34] at the start of a line
+    const regex = /^(\[\d+:\d+\])\s*(.*)$/;
+
+    for (const line of lines) {
+      const match = line.match(regex);
+      if (match) {
+        results.push({
+          time: match[1],
+          prompt: match[2],
+        });
+      } else if (results.length > 0) {
+        // Append text to the previous prompt if it wraps to a new line without a timestamp
+        results[results.length - 1].prompt += " " + line.trim();
+      }
+    }
+
+    return results;
   };
 
   const handleCopy = async (text: string, index: number | string) => {
@@ -110,7 +145,8 @@ const PromptGeneration: React.FC = () => {
             Generate Image Prompts
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Transform your timestamped scripts into production-ready visual prompts.
+            Transform your timestamped scripts into production-ready visual
+            prompts.
           </p>
         </div>
         {results && (
@@ -126,9 +162,7 @@ const PromptGeneration: React.FC = () => {
       </div>
 
       {!results ? (
-        /* --- Input Form View --- */
         <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Script Textarea Input */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label
@@ -153,7 +187,6 @@ const PromptGeneration: React.FC = () => {
             />
           </div>
 
-          {/* Video Style Selector */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Video Visual Style
@@ -172,7 +205,6 @@ const PromptGeneration: React.FC = () => {
             </Select>
           </div>
 
-          {/* Consistency Toggle Card */}
           <div className="bg-card border border-border/80 rounded-xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -180,7 +212,8 @@ const PromptGeneration: React.FC = () => {
                   Character & Environment Consistency
                 </span>
                 <p className="text-xs text-muted-foreground">
-                  Lock core features to maintain visual continuity across scene cuts
+                  Lock core features to maintain visual continuity across scene
+                  cuts
                 </p>
               </div>
               <Switch checked={consistency} onCheckedChange={setConsistency} />
@@ -194,7 +227,6 @@ const PromptGeneration: React.FC = () => {
             </div>
           </div>
 
-          {/* Submit Action Button */}
           <Button
             onClick={handleGenerate}
             disabled={!script.trim() || loading}
@@ -214,7 +246,6 @@ const PromptGeneration: React.FC = () => {
           </Button>
         </div>
       ) : (
-        /* --- Results Output View --- */
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -227,7 +258,7 @@ const PromptGeneration: React.FC = () => {
               onClick={() =>
                 handleCopy(
                   results.map((r) => `${r.time} ${r.prompt}`).join("\n"),
-                  "all"
+                  "all",
                 )
               }
             >
