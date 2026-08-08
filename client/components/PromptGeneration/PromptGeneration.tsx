@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -70,6 +70,14 @@ const PromptGeneration = () => {
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
+
+  useEffect(() => {
+   // Read from session storage after component mounts on the client
+    const text = sessionStorage.getItem("promptScript") || "";
+    setScript(text);
+
+        sessionStorage.removeItem("promptScript")
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto p-6 lg:p-8 w-full select-none">

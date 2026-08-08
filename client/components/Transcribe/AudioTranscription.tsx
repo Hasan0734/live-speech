@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState } from "react";
-import { Upload, Zap, Target, Info, ChevronDown } from "lucide-react";
+import { useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { Badge } from "../ui/badge";
 import ModeSelection from "./ModeSelection";
 import DropZone from "./DropZone";
@@ -12,7 +12,13 @@ import axios from "axios";
 import { API_URL } from "@/lib/utils";
 import { toast } from "sonner";
 import Transcribing from "./Transcribing";
-import { Textarea } from "../ui/textarea";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "../ui/input-group";
+import { useRouter } from 'next/navigation';
 
 const steps = [
   { number: "1", label: "Upload audio", active: true },
@@ -36,9 +42,13 @@ export default function AudioTranscription() {
   const [transcriptionText, setTranscriptionText] = useState("");
   const [status, setStatus] = useState("");
   const [transcribing, setTranscribing] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [selectedMode, setSelectedMode] = useState<"fast" | "accuracy">("fast");
 
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const cancelTracker = useRef<AbortController | null>(null);
+
+  const router = useRouter();
 
   const onFileSelect = async (file: File) => {
     if (file.type.startsWith("video")) {
@@ -105,6 +115,8 @@ export default function AudioTranscription() {
     const data = {
       key: uploadResult.key,
       mimetype: audioFile?.type,
+      language: selectedLanguage,
+      mode: selectedMode,
     };
 
     setTranscriptionText("");
@@ -176,6 +188,11 @@ export default function AudioTranscription() {
     URL.revokeObjectURL(url);
   };
 
+  const handleGenerate = () => {
+    sessionStorage.setItem("promptScript", transcriptionText);
+    router.push("/prompt-generation");
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans ">
       <div className="mb-6">
@@ -218,7 +235,10 @@ export default function AudioTranscription() {
         )}
       </AnimatePresence>
 
-      <ModeSelection />
+      <ModeSelection
+        selectedMode={selectedMode}
+        setSelectedMode={setSelectedMode}
+      />
 
       <div className="text-xs  mb-6 text-muted-foreground">
         You have{" "}
@@ -227,7 +247,10 @@ export default function AudioTranscription() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <SelectLanguage />
+        <SelectLanguage
+          selectedLanguage={selectedLanguage}
+          setSelectedLanguage={setSelectedLanguage}
+        />
         <div className="sm:col-span-3">
           <Button
             onClick={handleTranscribe}
@@ -257,23 +280,50 @@ export default function AudioTranscription() {
       {transcribing && <Transcribing />}
 
       {transcriptionText && (
-        <div className="mt-6 bg-accent p-3 rounded-xl">
-          <div className="flex justify-end gap-2 mb-4">
-            <Button onClick={handleDownload} variant={"secondary"}>
-              Download
+        <div className="mt-6 bg-accent p-2 rounded-xl">
+          {/* <div className="flex items-center justify-between mb-4">
+            <Button>
+              <Sparkles /> Generate prompt
             </Button>
-            <Button onClick={handleCopy} variant={"secondary"}>
-              Copy
-            </Button>
-          </div>
-          <Textarea
+          </div> */}
+          <InputGroup className="bg-background! max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+            <InputGroupTextarea />
+            <InputGroupAddon align={"block-start"}>
+              <div className="flex  justify-between items-center w-full">
+                <InputGroupButton
+                  onClick={handleGenerate}
+                  size={"sm"}
+                  variant={"default"}
+                >
+                  <Sparkles /> Generate prompt
+                </InputGroupButton>
+                <div className="flex items-center justify-end gap-2">
+                  <InputGroupButton
+                    size={"sm"}
+                    onClick={handleDownload}
+                    variant={"outline"}
+                  >
+                    Download
+                  </InputGroupButton>
+                  <InputGroupButton
+                    size={"sm"}
+                    onClick={handleCopy}
+                    variant={"outline"}
+                  >
+                    Copy
+                  </InputGroupButton>
+                </div>
+              </div>
+            </InputGroupAddon>
+          </InputGroup>
+          {/* <Textarea
             value={transcriptionText}
             readOnly
             name="script"
             id="script"
             placeholder="[0:00] Paste your script lines here with timestamps..."
-            className="min-h-55 max-h-100 focus-visible:ring-0 scrollbar-thin scrollbar-thumb-accent py-2 resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border bg-card/50"
-          />
+            className="min-h-55 max-h-100 bg-background! focus-visible:ring-0 scrollbar-thin scrollbar-thumb-accent py-2 resize-none font-mono text-sm leading-relaxed p-4 rounded-xl border-border"
+          /> */}
         </div>
       )}
     </div>

@@ -2,24 +2,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldLabel,
-  FieldTitle,
 } from "@/components/ui/field";
 import { Info, Target, Zap } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 
-const ModeSelection = () => {
-  const [selectedMode, setSelectedMode] = useState("fast");
+interface ModeSelectionProps {
+  selectedMode: "fast" | "accuracy";
+  setSelectedMode: Dispatch<SetStateAction<"fast" | "accuracy">>;
+}
 
-  console.log(selectedMode);
-
+const ModeSelection = ({
+  selectedMode,
+  setSelectedMode,
+}: ModeSelectionProps) => {
   return (
     <RadioGroup
       defaultValue="fast"
       className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
-      onValueChange={(v) => setSelectedMode(v)}
+      onValueChange={(v: "fast" | "accuracy") => setSelectedMode(v)}
     >
       <FieldLabel
         htmlFor="fast"
@@ -74,7 +76,11 @@ const ModeSelection = () => {
                 >
                   2× credits
                 </Badge>
-                <RadioGroupItem  className="bg-black" value="accuracy" id="accuracy" />
+                <RadioGroupItem
+                  className="bg-black"
+                  value="accuracy"
+                  id="accuracy"
+                />
               </div>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">

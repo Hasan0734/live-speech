@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import {
   Select,
   SelectContent,
@@ -83,9 +83,15 @@ const languages = [
   },
 ];
 
-const SelectLanguage = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState("");
+interface SelectedLanguageProps {
+  selectedLanguage: string;
+  setSelectedLanguage: Dispatch<SetStateAction<string>>;
+}
 
+const SelectLanguage = ({
+  selectedLanguage,
+  setSelectedLanguage,
+}: SelectedLanguageProps) => {
   return (
     <Select
       value={selectedLanguage}
@@ -97,7 +103,9 @@ const SelectLanguage = () => {
       <SelectContent>
         <SelectGroup>
           {languages.map((language) => (
-            <SelectItem value={language.name}>{language.name}</SelectItem>
+            <SelectItem key={language.name} value={language.name}>
+              {language.name}
+            </SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
