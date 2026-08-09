@@ -1,6 +1,4 @@
-"use client"
 import PromptGeneration from "@/components/PromptGeneration/PromptGeneration";
-import { useEffect, useState } from "react";
 
 const PromptGenerationPage = () => {
 

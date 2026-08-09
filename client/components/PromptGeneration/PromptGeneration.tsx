@@ -89,28 +89,37 @@ const PromptGeneration: React.FC = () => {
         );
       }
 
-      if (!response.body) {
-        throw new Error("Response body is missing.");
-      }
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let accumulatedJsonString = "";
+      const {data} = await response.json();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      console.log(data)
 
-        accumulatedJsonString += decoder.decode(value, { stream: true });
-      }
+      const parsedData = JSON.parse(data);
 
-      const parsedData = JSON.parse(accumulatedJsonString);
+      setResults(parsedData)
+      return;
 
-      if (parsedData?.error === "plan") {
-        toast.error(parsedData.message);
-        return;
-      }
+      // if (!response.body) {
+      //   throw new Error("Response body is missing.");
+      // }
+      // const reader = response.body.getReader();
+      // const decoder = new TextDecoder("utf-8");
+      // let accumulatedJsonString = "";
 
-      setResults(parsedData);
+      // while (true) {
+      //   const { done, value } = await reader.read();
+      //   if (done) break;
+
+      //   accumulatedJsonString += decoder.decode(value, { stream: true });
+      // }
+
+      // const parsedData = JSON.parse(accumulatedJsonString);
+
+      // if (parsedData?.error === "plan") {
+      //   toast.error(parsedData.message);
+      //   return;
+      // }
+
+      // setResults(parsedData);
     } catch (error: any) {
       console.error("Prompt generation failed:", error);
       toast.error(

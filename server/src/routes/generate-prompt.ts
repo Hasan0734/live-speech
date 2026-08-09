@@ -15,18 +15,21 @@ CRITICAL OUTPUT FORMATTING RULES:
 }
 
 
-const promptSchema = z.object({
-    time: z.string().describe("The script time format like [0:00]."),
-    prompt: z.string().describe("The prompt based on the script.")
-});
+const promptSchema = z.array(
+
+    z.object({
+        time: z.string().describe("The script time format like [0:00]."),
+        prompt: z.string().describe("The prompt based on the script.")
+    })
+
+);
 
 export async function GeneratePrompts(app: FastifyInstance) {
 
-    app.options("/api/generate-prompts", async (req, reply) => {
-        return reply.code(204).send();
-    });
+
 
     app.post("/api/generate-prompts", async (req, reply) => {
+
         const ai = getAi();
         const { script, style, consistency } = req.body as {
             script: string;
@@ -40,9 +43,8 @@ export async function GeneratePrompts(app: FastifyInstance) {
 
         try {
 
-
             const responseStream = await ai.interactions.create({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-3.6-flash',
                 input: [
                     { type: "text", text: `Please generate the image prompts for the following timestamped script:\n\n${script}` }
                 ],
@@ -52,42 +54,14 @@ export async function GeneratePrompts(app: FastifyInstance) {
                     mime_type: 'application/json',
                     schema: promptSchema
                 },
-                stream: true
+                // stream: true
             });
-
-
-            reply.raw.writeHead(200, {
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "Access-Control-Allow-Origin": "*", // Match frontend URL or leave wildcard if debugging
-            });
-
-
-            for await (const chunk of responseStream) {
-                if (chunk.event_type === "error") {
-                    reply.raw.write(JSON.stringify({
-                        error: "plan",
-                        message: "You exceeded your current quota."
-                    }));
-                    reply.raw.end();
-                    return;
-                }
-                if (chunk.event_type === "step.delta") {
-                    if (chunk.delta?.type === "text") {
-                        reply.raw.write(chunk.delta.text);
-                    }
-                }
-            }
-            reply.raw.end();
+            reply.code(200).send({ data: responseStream.output_text })
 
         } catch (error: any) {
-            req.log.error(error);
-            if (!reply.raw.headersSent) {
-                return reply.code(500).send({ error: error.message || "Internal server error during prompt generation." });
-            } else {
-                reply.raw.end();
-            }
+            console.log(error.message)
+            app.log.info("generate-prompt error", error.message)
+
         }
 
     })
