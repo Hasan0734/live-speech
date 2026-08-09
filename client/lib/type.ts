@@ -14,3 +14,12 @@ export type VoiceInfo =  {
   style?: string;
   provider?: string;
 }
+
+
+export interface Project {
+  id: string;
+  title?: string;
+  imageCount?: number;
+  imageUrl?: string;
+  createdAt?: string;
+}
