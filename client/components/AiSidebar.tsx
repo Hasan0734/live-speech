@@ -36,25 +36,25 @@ const AiSidebar = () => {
     {
       id: "1",
       label: "Text to Speech",
-      url: "/text-to-speech",
+      url: "/dashboard/voice-generation",
       icon: Speech,
     },
     {
       id: "2",
       label: "Transcribe Audio",
-      url: "/transcribe",
+      url: "/dashboard/transcribe",
       icon: MicVocal,
     },
     {
       id: "3",
       label: "Generate Prompts",
-      url: "/prompt-generation",
+      url: "/dashboard/prompt-generation",
       icon: Sparkles,
     },
     {
       id: "4",
       label: "Image Generator",
-      url: "/image-generator",
+      url: "/dashboard/image-generator",
       icon: ImageIcon,
     },
   ];
