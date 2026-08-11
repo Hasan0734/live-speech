@@ -1,13 +1,16 @@
-"use client";
+import { Sparkles } from "lucide-react";
+import { createClient } from "@/utils/supabase/server";
+import Link from "next/link";
+import { NavbarMobileMenu } from "./NavbarMobileMenu";
 
-import React, { useState } from "react";
-import { Sparkles, Menu, X } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+export async function Navbar() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-   const supbase =  createClient()
-
+  const displayName =
+    user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0];
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
@@ -22,48 +25,61 @@ export function Navbar() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#workflow" className="hover:text-white transition-colors">How It Works</a>
-          <a href="#why-us" className="hover:text-white transition-colors">Why OmniStudio</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          <a href="#testimonials" className="hover:text-white transition-colors">Testimonials</a>
-          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          <a href="#features" className="hover:text-white transition-colors">
+            Features
+          </a>
+          <a href="#workflow" className="hover:text-white transition-colors">
+            How It Works
+          </a>
+          <a href="#why-us" className="hover:text-white transition-colors">
+            Why OmniStudio
+          </a>
+          <a href="#pricing" className="hover:text-white transition-colors">
+            Pricing
+          </a>
+          <a
+            href="#testimonials"
+            className="hover:text-white transition-colors"
+          >
+            Testimonials
+          </a>
+          <a href="#faq" className="hover:text-white transition-colors">
+            FAQ
+          </a>
         </nav>
 
-        <div className="hidden md:flex items-center gap-4">
-          <a href="/login" className="text-sm font-medium text-zinc-300 hover:text-white px-3 py-2">
-            Sign In
-          </a>
-          <a 
-            href="/dashboard" 
-            className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 hover:bg-red-500 transition-all active:scale-95"
-          >
-            Get Started Free
-          </a>
-        </div>
-
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-zinc-400 hover:text-white"
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-zinc-800 bg-zinc-950 px-4 pt-2 pb-6 space-y-3">
-          <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">Features</a>
-          <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">How It Works</a>
-          <a href="#why-us" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">Why OmniStudio</a>
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">Pricing</a>
-          <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">Testimonials</a>
-          <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300">FAQ</a>
-          <div className="pt-4 flex flex-col gap-3">
-            <a href="/login" className="text-center py-2 text-zinc-300 font-medium">Sign In</a>
-            <a href="/dashboard" className="text-center rounded-lg bg-red-600 py-2.5 font-semibold text-white">Get Started Free</a>
+        {user ? (
+          <div className="flex items-center gap-3 text-sm text-zinc-200">
+            <div>
+              Welcome,{" "}
+              <span className="font-semibold text-white">{displayName}</span>
+            </div>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 hover:bg-red-500 transition-all active:scale-95"
+            >
+              Dashboard
+            </Link>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="hidden md:flex items-center gap-4">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-zinc-300 hover:text-white px-3 py-2"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 hover:bg-red-500 transition-all active:scale-95"
+            >
+              Start Free
+            </Link>
+          </div>
+        )}
+
+        <NavbarMobileMenu />
+      </div>
     </header>
   );
 }

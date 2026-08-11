@@ -1,4 +1,3 @@
-"use client";
 import {
   Settings,
   CreditCard,
@@ -17,32 +16,50 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-const UserProfile = () => {
-  // Mock user details for the dropdown footer
-  const user = {
-    name: "Alex Morgan",
-    email: "alex.morgan@developer.io",
-    avatar: "/avatars/alex.png",
+const UserProfile = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const fullName =
+    user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+  const avatarUrl = user.user_metadata?.avatar_url;
+
+  const initials = fullName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Server action to handle sign out securely
+  const signOutAction = async () => {
+    "use server";
+    const supabaseServer = await createClient();
+    await supabaseServer.auth.signOut();
+    redirect("/login");
   };
 
   return (
-    <DropdownMenu >
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className=" w-full flex items-center justify-between p-2 rounded-lg hover:bg-accent transition-colors text-left group focus:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <button className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-accent transition-colors text-left group focus:outline-none focus-visible:ring-1 focus-visible:ring-ring">
           <div className="flex items-center gap-3 min-w-0">
             <Avatar className="h-8 w-8 rounded-md border border-border shrink-0">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
               <AvatarFallback className="rounded-md bg-muted text-muted-foreground text-xs font-semibold">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
               <span className="text-xs font-medium text-foreground truncate">
-                {user.name}
+                {fullName}
               </span>
               <span className="text-[11px] text-muted-foreground truncate">
                 {user.email}
@@ -63,7 +80,7 @@ const UserProfile = () => {
         <DropdownMenuLabel className="p-2 font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-xs font-medium leading-none text-foreground">
-              {user.name}
+              {fullName}
             </p>
             <p className="text-[11px] leading-none text-muted-foreground truncate">
               {user.email}
@@ -105,16 +122,15 @@ const UserProfile = () => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem
-          className="cursor-pointer gap-2 text-xs py-2 text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50"
-          onClick={() => {
-            // Handle sign-out logic here
-            console.log("Signing out...");
-          }}
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          <span>Sign out</span>
-        </DropdownMenuItem>
+        {/* Use a form with Server Action for secure sign out */}
+        <form action={signOutAction}>
+          <button type="submit" className="w-full">
+            <DropdownMenuItem className="cursor-pointer gap-2 text-xs py-2 text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50 w-full">
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </button>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
