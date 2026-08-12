@@ -1,8 +1,6 @@
 import ImagePlayground from "@/components/ImageGenerator/imagePlayground";
 
 
-
-
 const ProjectPage = async () => {
 
   return (

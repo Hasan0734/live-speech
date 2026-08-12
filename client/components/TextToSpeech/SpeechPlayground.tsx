@@ -41,7 +41,7 @@ const SpeechPlayground = () => {
     if (!text.trim() && text.length <= 5000) return;
 
     try {
-      const res = await axios.post(`${API_URL}/text-to-speech`, {
+      const res = await axios.post(`/api/voice-generation`, {
         text,
         voice: selectedVoice.name,
       });
@@ -54,10 +54,16 @@ const SpeechPlayground = () => {
         return;
       }
 
+      console.log(res);
+
       toast.error("Try again later. 😭");
 
       setLoading(false);
     } catch (error: any) {
+      if (error.response) {
+        toast.error(error.response.data.message);
+        return;
+      }
       toast.error("Something is wrong! Try later");
       setLoading(false);
     }
@@ -66,7 +72,6 @@ const SpeechPlayground = () => {
   return (
     <div className="w-full h-full flex flex-col">
       <InputGroup className="min-h-0 bg-background! max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-       
         <InputGroupTextarea
           onChange={(e) => setText(e.target.value)}
           placeholder="Start type here or paste..."
