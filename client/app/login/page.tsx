@@ -2,28 +2,28 @@
 
 import SocialAuthButtons from "@/components/social/SocialAuthButtons";
 import { Sparkles, ShieldCheck, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
-
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-red-500 selection:text-white font-sans antialiased flex flex-col justify-between relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-red-600/15 blur-[140px] pointer-events-none rounded-full" />
 
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between relative z-10">
-        <a
+      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative z-10">
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back to home
-        </a>
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-md shadow-red-600/20">
+        </Link>
+        <Link href={'/'} className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-xl bg-linear-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-md shadow-red-600/20">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <span className="font-bold tracking-tight text-white">
             OmniStudio<span className="text-red-500">.AI</span>
           </span>
-        </div>
+        </Link>
       </header>
 
       <main className="max-w-md w-full mx-auto px-4 relative z-10 my-auto pb-16">
@@ -56,19 +56,19 @@ export default function LoginPage() {
         {/* Legal Footer Text */}
         <p className="mt-8 text-center text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
           By continuing, you agree to our{" "}
-          <a
+          <Link
             href="/terms"
             className="underline hover:text-zinc-300 transition-colors"
           >
             Terms
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a
+          <Link
             href="/privacy"
             className="underline hover:text-zinc-300 transition-colors"
           >
             Privacy Policy
-          </a>
+          </Link>
         </p>
       </main>
 

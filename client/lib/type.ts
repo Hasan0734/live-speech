@@ -7,7 +7,7 @@ export type Transcript = {
 }
 
 
-export type VoiceInfo =  {
+export type VoiceInfo = {
   name: string;
   language?: string;
   gender?: string;
@@ -18,8 +18,11 @@ export type VoiceInfo =  {
 
 export interface Project {
   id: string;
-  title?: string;
-  imageCount?: number;
-  imageUrl?: string;
-  createdAt?: string;
+  hash: string;
+  name: string;
+  user_id: string;
+  r2_folder: string;
+  updated_at: Date;
+  creaged_at: Date;
+  
 }

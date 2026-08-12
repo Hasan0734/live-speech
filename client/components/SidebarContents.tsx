@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 const SidebarContents = () => {
   const pathname = usePathname();
 
-  console.log(pathname);
   const mainNavItems = [
     {
       id: "1",
