@@ -53,7 +53,17 @@ const createWavBuffer = (rawMimeType: string, base64Audio: string): Buffer => {
 };
 
 export async function POST(req: Request) {
-    const supabase = await createClient()
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+
+    if (!user) {
+        return NextResponse.json({ message: "Authentication required." }, { status: 401, statusText: "Authentication required." })
+    }
+
     try {
         const body = await req.json();
         const { text, voice = "Kore" } = body;
@@ -124,7 +134,8 @@ export async function POST(req: Request) {
                     voice_used: voice,
                     text_length: text.length,
                     file_path: filePath,
-                    public_url: publicUrl
+                    public_url: publicUrl,
+                    user_id: user.id
                 }
             ])
 
@@ -146,9 +157,11 @@ export async function POST(req: Request) {
     } catch (error: any) {
         // console.error("TTS Route Error:", error);
 
+        console.log(error)
+
         if (error.status == 429) {
             return NextResponse.json(
-                { message: "You have to reched your limit." },
+                { message: "You have to reached your limit." },
                 { status: 429 }
             );
         }

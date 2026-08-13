@@ -46,18 +46,8 @@ const SpeechPlayground = () => {
         voice: selectedVoice.name,
       });
 
-      if (res.data) {
-        setAudioUrl(res.data.audioUrl);
-        setResVoice((prev) => ({ ...prev, name: res.data.voiceUsed }));
-        setLoading(false);
-
-        return;
-      }
-
-      console.log(res);
-
-      toast.error("Try again later. 😭");
-
+      setAudioUrl(res.data.audioUrl);
+      setResVoice((prev) => ({ ...prev, name: res.data.voiceUsed }));
       setLoading(false);
     } catch (error: any) {
       if (error.response) {
@@ -65,6 +55,7 @@ const SpeechPlayground = () => {
         return;
       }
       toast.error("Something is wrong! Try later");
+    } finally {
       setLoading(false);
     }
   };
