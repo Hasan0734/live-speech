@@ -8,18 +8,18 @@ export const metadata: Metadata = {
 };
 
 const getHistory = async () => {
-  const supabase = createClient();
-  const res = (await supabase).from("tts-logs").select("*");
-  return (await res)?.data || [];
+  const supabase = await createClient();
+  const res = await supabase.from("tts_logs").select("*");
+
+  return res?.data || [];
 };
 
 const TextToSpeech = async () => {
   const data = await getHistory();
 
-  console.log(data)
   return (
     <div className="relative h-screen flex px-4 md:px-0">
-      <SpeechPlayground />
+      <SpeechPlayground initialHistory={data} />
     </div>
   );
 };

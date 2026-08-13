@@ -179,7 +179,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }
 
   return (
-    <div className="relative">
+    <div className="relative border-t">
       <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" />
 
       <AnimatePresence>

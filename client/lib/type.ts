@@ -24,5 +24,17 @@ export interface Project {
   r2_folder: string;
   updated_at: Date;
   creaged_at: Date;
-  
+
+}
+
+export type VoiceGeneration = {
+  id: string,
+  text_content: string
+  voice_used: string
+  text_length: number
+  file_path: string
+  public_url: string
+  user_id?: string
+  created_at: Date
+  updated_at: Date
 }

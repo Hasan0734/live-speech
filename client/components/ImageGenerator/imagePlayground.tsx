@@ -1,15 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "../ui/button";
 import {
   ArrowLeft,
-  Sparkles,
   Image as ImageIcon,
   Trash2,
   Download,
+  Pencil,
+  CheckIcon,
 } from "lucide-react";
 import PromptBox from "./PromptBox";
 import Link from "next/link";
+import { ButtonGroup } from "../ui/button-group";
+import { Input } from "../ui/input";
+import { createClient } from "@/utils/supabase/client";
+import { Spinner } from "../ui/spinner";
+import { Project } from "@/lib/type";
+import { toast } from "sonner";
 
 interface GeneratedImage {
   id: string;
@@ -19,23 +26,25 @@ interface GeneratedImage {
 }
 
 interface ImagePlaygroundProps {
-  projectTitle?: string;
+  project: Project;
   initialImages?: GeneratedImage[];
   onBack?: () => void;
-  onUpdateTitle?: (newTitle: string) => void;
 }
 
 const ImagePlayground = ({
-  projectTitle = "Aug 9, 2026, 10:10 AM",
+  project,
   initialImages = [],
   onBack,
-  onUpdateTitle,
 }: ImagePlaygroundProps) => {
-  const [title, setTitle] = useState(projectTitle);
+  const [title, setTitle] = useState(project.name);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [promptText, setPromptText] = useState("");
   const [images, setImages] = useState<GeneratedImage[]>(initialImages);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const [isPending, startTransition] = useTransition();
+
+  const supabase = createClient();
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,54 +70,85 @@ const ImagePlayground = ({
     }, 1500);
   };
 
+  const handleUpdateTitle = () => {
+    startTransition(async () => {
+      if (project.name === title) {
+        setIsEditingTitle(false);
+        return;
+      }
+      const { error: insertError, data } = await supabase
+        .from("image-project")
+        .update({ name: title })
+        .eq("id", project.id);
+
+        console.log(insertError, data)
+
+      if (insertError) {
+        toast.error(insertError.message);
+        // setTitle(project.name);
+        return;
+      }
+      setIsEditingTitle(false);
+      toast.success("Project name changed.");
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden w-full">
       <nav className="flex items-center justify-between px-6 py-2.5">
         <div className="flex items-center justify-between gap-4 w-full">
-          <Link href={'/dashboard/image-generator'}>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onBack}
-              className="rounded-xl border-white/10 bg-background/50 hover:bg-background/80"
-            >
-              <ArrowLeft className="h-4 w-4" />
+          <Link href={"/dashboard/image-generator"}>
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" /> Projects
             </Button>
           </Link>
 
-          {/* Editable Project Title */}
-          <div>
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={title}
-                autoFocus
-                onBlur={() => {
-                  setIsEditingTitle(false);
-                  onUpdateTitle?.(title);
-                }}
-                onChange={(e) => setTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setIsEditingTitle(false);
-                    onUpdateTitle?.(title);
-                  }
-                }}
-                className="bg-accent/30 border border-white/20 rounded-lg px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            ) : (
-              <h1
-                onClick={() => setIsEditingTitle(true)}
-                className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors tracking-wide"
-                title="Click to rename"
-              >
-                {title}
-              </h1>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {images.length} generated images
-            </p>
-          </div>
+          {isEditingTitle ? (
+            <ButtonGroup>
+              <ButtonGroup>
+                <Input
+                  type="text"
+                  value={title}
+                  disabled={isPending}
+                  autoFocus
+                  // onBlur={() => {
+                  //   setIsEditingTitle(false);
+                  //   handleUpdateTitle?.(title);
+                  // }}
+                  onChange={(e) => setTitle(e.target.value)}
+                  // onKeyDown={(e) => {
+                  //   if (e.key === "Enter") {
+                  //     setIsEditingTitle(false);
+                  //     handleUpdateTitle?.(title);
+                  //   }
+                  // }}
+                  className="focus-visible:ring-0"
+                />
+              </ButtonGroup>
+              <ButtonGroup>
+                <Button
+                  onClick={handleUpdateTitle}
+                  disabled={isPending}
+                  variant="outline"
+                  size="icon"
+                >
+                  {isPending ? <Spinner /> : <CheckIcon />}
+                </Button>
+              </ButtonGroup>
+            </ButtonGroup>
+          ) : (
+            <div
+              onClick={() => setIsEditingTitle(true)}
+              className="flex items-center gap-3 border rounded-full text-sm pr-2"
+            >
+              <div className="bg-primary px-2 py-1 rounded-l-full text-background">
+                Project
+              </div>
+              <h3 className="flex items-center gap-2">
+                {title} <Pencil size={12} />
+              </h3>
+            </div>
+          )}
         </div>
       </nav>
 

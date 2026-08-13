@@ -24,7 +24,7 @@ const ProjectCard = ({ project, onRename, onDelete }: ProjectCardProps) => {
 
   return (
     <Link
-      href={`/image-generator/${project.id}`}
+      href={`/dashboard/image-generator/${project.hash}`}
       className="relative w-full aspect-square rounded-2xl p-4 flex flex-col justify-between overflow-hidden group/card bg-accent/20 border border-white/10 shadow-sm"
     >
       {project.imageUrl ? (

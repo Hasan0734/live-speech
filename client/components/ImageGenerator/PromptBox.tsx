@@ -8,12 +8,12 @@ import {
 } from "../ui/input-group";
 import { ArrowRight, PlusIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Popover, PopoverTrigger } from "../ui/popover";
 import ConfigPopover from "./ConfigPopover";
 
 const PromptBox = () => {
   return (
-    <div className="max-w-xl mx-auto w-full pb-2">
+    <div className="max-w-2xl mx-auto w-full pb-2">
       <InputGroup className="min-h-36 bg-sidebar! dark:has-disabled:bg-input/30 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 rounded-2xl has-[[data-slot=input-group-control]:focus-visible]:ring-0 shadow-xl p-2">
         <InputGroupTextarea
           placeholder="Describe your image... (type @ to add character / environment or reference)"
@@ -41,7 +41,7 @@ const PromptBox = () => {
                     2:3
                   </Badge>
                 </PopoverTrigger>
-                <ConfigPopover/>
+                <ConfigPopover />
               </Popover>
               <InputGroupButton
                 variant={"secondary"}
