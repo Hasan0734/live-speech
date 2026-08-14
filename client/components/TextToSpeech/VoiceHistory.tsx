@@ -2,12 +2,17 @@ import { VoiceGeneration } from "@/lib/type";
 
 import { Badge } from "../ui/badge";
 import VoiceCard from "./VoiceCard";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import SearchAndFilter from "./SearchAndFilter";
 
 interface VoiceHistoryProps {
   initialHistory: VoiceGeneration[];
   setAudioUrl: Dispatch<SetStateAction<string | null>>;
+  togglePlay: () => Promise<void>;
+  isPlaying: boolean;
+  audioUrl: string | null;
+  selectedId: string | null;
+  setSelectedId: Dispatch<SetStateAction<string | null>>;
 }
 
 const groupHistoryByDate = (items: VoiceGeneration[]) => {
@@ -30,7 +35,15 @@ const groupHistoryByDate = (items: VoiceGeneration[]) => {
   return groups;
 };
 
-const VoiceHistory = ({ initialHistory, setAudioUrl }: VoiceHistoryProps) => {
+const VoiceHistory = ({
+  initialHistory,
+  setAudioUrl,
+  togglePlay,
+  isPlaying,
+  audioUrl,
+  selectedId,
+  setSelectedId,
+}: VoiceHistoryProps) => {
   const groupedHistory = groupHistoryByDate(initialHistory);
 
   return (
@@ -63,9 +76,14 @@ const VoiceHistory = ({ initialHistory, setAudioUrl }: VoiceHistoryProps) => {
               <div className="space-y-2.5">
                 {items.map((item) => (
                   <VoiceCard
+                    isPlaying={isPlaying}
+                    togglePlay={togglePlay}
                     setAudioUrl={setAudioUrl}
+                    audioUrl={audioUrl}
                     key={item.id}
                     item={item}
+                    selectedId={selectedId}
+                    setSelectedId={setSelectedId}
                   />
                 ))}
               </div>

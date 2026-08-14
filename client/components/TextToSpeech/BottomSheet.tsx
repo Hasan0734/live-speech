@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { VoiceInfo } from "@/lib/type";
@@ -12,6 +19,12 @@ interface BottomSheetProps {
   voice?: VoiceInfo;
   generatedAt?: string;
   isGenerating?: boolean;
+  audioRef: RefObject<HTMLAudioElement | null>;
+  isAudioLoading: boolean;
+  setIsAudioLoading: Dispatch<SetStateAction<boolean>>;
+  togglePlay: () => Promise<void>;
+  isPlaying: boolean;
+  setIsPlaying: Dispatch<SetStateAction<boolean>>;
 }
 
 const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -26,12 +39,15 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   },
   generatedAt = "Generated just now",
   isGenerating = false,
+  audioRef,
+  isAudioLoading,
+  setIsAudioLoading,
+  togglePlay,
+  isPlaying,
+  setIsPlaying,
 }) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const [expanded, setExpanded] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
+
   const [downloadComplete, setDownloadComplete] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -145,23 +161,38 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   }, [audioUrl]);
 
-  const togglePlay = async (): Promise<void> => {
+  useEffect(() => {
     const audio = audioRef.current;
 
-    if (!audio || !audioUrl) return;
+    if (!audio) return;
 
-    try {
-      if (audio.paused) {
-        setIsAudioLoading(true);
-        await audio.play();
-      } else {
-        audio.pause();
-      }
-    } catch (error) {
-      setIsAudioLoading(false);
-      console.error("Audio playback failed:", error);
+    audio.pause();
+    audio.currentTime = 0;
+    audio.load();
+
+    setCurrentTime(0);
+    setDuration(0);
+    setBuffered(0);
+    setIsPlaying(false);
+    setDownloadComplete(false);
+
+    if (audioUrl) {
+      setExpanded(true);
+
+      // Safely trigger play once the source changes
+      const playAudioWhenReady = async () => {
+        try {
+          setIsAudioLoading(true);
+          await audio.play();
+        } catch (error) {
+          setIsAudioLoading(false);
+          console.error("Auto-play failed:", error);
+        }
+      };
+
+      playAudioWhenReady();
     }
-  };
+  }, [audioUrl, audioRef, setIsAudioLoading, setIsPlaying]);
 
   if (!hasAudio && !isGenerating) {
     return (
@@ -179,9 +210,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }
 
   return (
-    <div className="fixed border-t bottom-0 bg-background w-[calc(100%-var(--sidebar-width,0rem))]"
-      // style={{width: '100%'}}
-    >
+    <div className="fixed border-t bottom-0 bg-background w-[calc(100%-var(--sidebar-width,0rem))]">
       <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" />
 
       <AnimatePresence>
