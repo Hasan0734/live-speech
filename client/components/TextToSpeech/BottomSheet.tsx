@@ -179,7 +179,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }
 
   return (
-    <div className="relative border-t">
+    <div className="fixed border-t bottom-0 bg-background w-[calc(100%-var(--sidebar-width,0rem))]"
+      // style={{width: '100%'}}
+    >
       <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" />
 
       <AnimatePresence>
