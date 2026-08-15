@@ -83,6 +83,7 @@ const SpeechPlayground = ({ initialHistory }: SpeechPlaygroundProps) => {
 
   useEffect(() => {
     setAudioUrl(null);
+    setIsPlaying(false)
   }, [text]);
 
   return (
@@ -105,6 +106,7 @@ const SpeechPlayground = ({ initialHistory }: SpeechPlaygroundProps) => {
           audioUrl={audioUrl}
           setSelectedId={setSelectedId}
           selectedId={selectedId}
+          setText={setText}
         />
       </div>
       {audioUrl && (

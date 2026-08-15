@@ -149,6 +149,7 @@ const VoiceCard = ({
             onClick={(e) => {
               e.stopPropagation();
               setSelectedItem(item);
+              handleSelect();
               setOpenDetails(true);
             }}
           >
