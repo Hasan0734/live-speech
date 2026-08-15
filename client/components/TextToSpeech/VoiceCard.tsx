@@ -2,9 +2,10 @@ import { VoiceGeneration } from "@/lib/type";
 import TooltipWrapper from "../TooltipWrapper";
 import { Download, AlignLeft, Play, Pause } from "lucide-react";
 import { Button } from "../ui/button";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
+import { formatDistance, subDays } from "date-fns";
 
 interface VoiceCardProps {
   item: VoiceGeneration;
@@ -14,6 +15,8 @@ interface VoiceCardProps {
   selectedId: string | null;
   setSelectedId: Dispatch<SetStateAction<string | null>>;
   audioUrl: string | null;
+  setOpenDetails: Dispatch<SetStateAction<boolean>>;
+  setSelectedItem: Dispatch<SetStateAction<VoiceGeneration | null>>;
 }
 
 const VoiceCard = ({
@@ -24,26 +27,26 @@ const VoiceCard = ({
   setSelectedId,
   selectedId,
   audioUrl,
+  setOpenDetails,
+  setSelectedItem,
 }: VoiceCardProps) => {
   const isSelected = selectedId === item.id;
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadComplete, setDownloadComplete] = useState(false);
 
   const fileName = `${item.text_content.slice(0, 20)}.mp3`;
 
   const handleSelect = () => {
-    if (isSelected) {
-      togglePlay();
-    } else {
-      setSelectedId(item.id);
-      setAudioUrl(item.public_url);
-    }
+    // if (isSelected) {
+    //   togglePlay();
+    // } else {
+    setSelectedId(item.id);
+    setAudioUrl(item.public_url);
+    // }
   };
 
   const handleDownload = async (): Promise<void> => {
     try {
       setIsDownloading(true);
-      setDownloadComplete(false);
 
       const response = await fetch(item.public_url);
 
@@ -62,12 +65,6 @@ const VoiceCard = ({
       anchor.remove();
 
       URL.revokeObjectURL(blobUrl);
-
-      setDownloadComplete(true);
-
-      window.setTimeout(() => {
-        setDownloadComplete(false);
-      }, 2000);
     } catch (error) {
       console.error("Audio download failed:", error);
 
@@ -105,10 +102,12 @@ const VoiceCard = ({
           <span className="truncate max-w-42.5">{item.voice_used}</span>
           <span>·</span>
           <span className="shrink-0">
-            {new Date(item.created_at).toLocaleDateString(undefined, {
+            {/* {new Date(item.created_at).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
-            })}
+            })} */}
+
+            {formatDistance(item.created_at, new Date(), { addSuffix: true })}
           </span>
         </div>
       </div>
@@ -147,7 +146,11 @@ const VoiceCard = ({
           <Button
             variant="ghost"
             size={"icon-lg"}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedItem(item);
+              setOpenDetails(true);
+            }}
           >
             <AlignLeft />
           </Button>

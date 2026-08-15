@@ -4,6 +4,8 @@ import { Badge } from "../ui/badge";
 import VoiceCard from "./VoiceCard";
 import { Dispatch, SetStateAction, useState } from "react";
 import SearchAndFilter from "./SearchAndFilter";
+import HistoryDetails from "./HistoryDetails";
+import { AnimatePresence, motion } from "motion/react";
 
 interface VoiceHistoryProps {
   initialHistory: VoiceGeneration[];
@@ -45,52 +47,78 @@ const VoiceHistory = ({
   setSelectedId,
 }: VoiceHistoryProps) => {
   const groupedHistory = groupHistoryByDate(initialHistory);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<VoiceGeneration | null>(
+    null,
+  );
 
   return (
-    <div className="w-100 2xl:w-120 bg-sidebar border-l h-full flex flex-col">
-      {/* Top Header Tabs simulation */}
-      <div className="px-6 pt-4 pb-3 border-b flex items-center gap-6 text-sm">
-        <span className="text-muted-foreground font-medium cursor-pointer hover:text-foreground">
-          Settings
-        </span>
-        <span className="font-semibold text-foreground border-b-2 border-foreground pb-3 -mb-[13px]">
-          History
-        </span>
-      </div>
-
-      <SearchAndFilter />
-
-      {/* History Feed List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-accent">
-        {Object.keys(groupedHistory).length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-            <p className="text-sm">No history found</p>
-          </div>
-        ) : (
-          Object.entries(groupedHistory).map(([dateStr, items]) => (
-            <div key={dateStr} className="space-y-3">
-              <div className="flex justify-center">
-                <Badge variant={"secondary"}>{dateStr}</Badge>
-              </div>
-
-              <div className="space-y-2.5">
-                {items.map((item) => (
-                  <VoiceCard
-                    isPlaying={isPlaying}
-                    togglePlay={togglePlay}
-                    setAudioUrl={setAudioUrl}
-                    audioUrl={audioUrl}
-                    key={item.id}
-                    item={item}
-                    selectedId={selectedId}
-                    setSelectedId={setSelectedId}
-                  />
-                ))}
-              </div>
+    <div className="w-100 2xl:w-120 bg-sidebar border-l h-full overflow-hidden">
+      <AnimatePresence>
+        {!openDetails && (
+          <motion.div
+   
+            className="flex flex-col h-full pr-1"
+          >
+            {/* Top Header Tabs simulation */}
+            <div className="px-6 pt-4 pb-3 border-b flex items-center gap-6 text-sm">
+              <span className="text-muted-foreground font-medium cursor-pointer hover:text-foreground">
+                Settings
+              </span>
+              <span className="font-semibold text-foreground border-b-2 border-foreground pb-3 -mb-[13px]">
+                History
+              </span>
             </div>
-          ))
+
+            <SearchAndFilter />
+
+            {/* History Feed List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-accent">
+              {Object.keys(groupedHistory).length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
+                  <p className="text-sm">No history found</p>
+                </div>
+              ) : (
+                Object.entries(groupedHistory).map(([dateStr, items]) => (
+                  <div key={dateStr} className="space-y-3">
+                    <div className="flex justify-center">
+                      <Badge variant={"secondary"}>{dateStr}</Badge>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {items.map((item) => (
+                        <VoiceCard
+                          isPlaying={isPlaying}
+                          togglePlay={togglePlay}
+                          setAudioUrl={setAudioUrl}
+                          audioUrl={audioUrl}
+                          key={item.id}
+                          item={item}
+                          selectedId={selectedId}
+                          setSelectedId={setSelectedId}
+                          setOpenDetails={setOpenDetails}
+                          setSelectedItem={setSelectedItem}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
         )}
-      </div>
+
+        {openDetails && selectedItem && (
+          <motion.div
+
+          >
+            <HistoryDetails
+              item={selectedItem}
+              setOpenDetails={setOpenDetails}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
