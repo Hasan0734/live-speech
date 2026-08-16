@@ -69,7 +69,7 @@ const VoiceHistory = ({
   const groupedHistory = groupHistoryByDate(filterdHistory);
 
   return (
-    <div className="w-100 2xl:w-120 bg-sidebar border-l h-full overflow-hidden">
+    <div className="w-100 2xl:w-120 bg-sidebar border-l h-full overflow-hidden hidden xl:block">
       <AnimatePresence mode="wait">
         {!openDetails && (
           <motion.div

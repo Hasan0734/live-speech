@@ -33,7 +33,7 @@ const TextInputArea = ({
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Start type here or paste..."
-        className=" h-full pt-5 px-10 2xl:px-30 scroll-fade scrollbar-thin scrollbar-thumb-accent text-sm text-balance"
+        className=" h-full pt-5 sm:px-10 2xl:px-30 scroll-fade scrollbar-thin scrollbar-thumb-accent text-sm text-balance"
       />
       <InputGroupAddon
         align={"block-end"}
