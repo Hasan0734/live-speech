@@ -8,6 +8,7 @@ import {
 } from "../ui/input-group";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 interface TranscribedProps {
   transcriptionText: string;
@@ -59,28 +60,29 @@ const TranscribedPreview = ({
         <InputGroupTextarea value={transcriptionText} readOnly />
         <InputGroupAddon align={"block-start"}>
           <div className="flex  justify-between items-center w-full">
-            <InputGroupButton
+            <Button
               onClick={handleGenerate}
               size={"sm"}
               variant={"default"}
+              className="rounded-full"
             >
               <Sparkles /> Generate prompt
-            </InputGroupButton>
+            </Button>
             <div className="flex items-center justify-end gap-2">
-              <InputGroupButton
+              <Button
                 size={"sm"}
                 onClick={handleDownload}
-                variant={"outline"}
+                variant={"secondary"}
               >
                 Download
-              </InputGroupButton>
-              <InputGroupButton
+              </Button>
+              <Button
                 size={"sm"}
                 onClick={handleCopy}
-                variant={"outline"}
+                variant={"secondary"}
               >
                 Copy
-              </InputGroupButton>
+              </Button>
             </div>
           </div>
         </InputGroupAddon>

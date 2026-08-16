@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -79,3 +80,19 @@ export function pcmToWavDataUri(pcmBytes: Uint8Array, sampleRate = 24000): strin
   }
   return `data:audio/wav;base64,${btoa(binary)}`;
 }
+
+export const getAi = () => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        console.warn("GEMINI_API_KEY environment variable is not set.");
+    }
+
+    return new GoogleGenAI({
+        apiKey: apiKey || "",
+        httpOptions: {
+            headers: {
+                "User-Agent": "nextjs-build"
+            }
+        }
+    });
+};

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "../ui/badge";
 import ModeSelection from "./ModeSelection";
 import DropZone from "./DropZone";
@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import TranscribedPreview from "./TranscribedPreview";
 import TranscribeHeading from "./TranscribeHeading";
 import TranscribeSidebar from "./TranscribeSidebar";
+import { Spinner } from "../ui/spinner";
 
 const steps = [
   { number: "1", label: "Upload audio", active: true },
@@ -41,13 +42,30 @@ export default function AudioTranscription() {
   const [transcribing, setTranscribing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("");
   const [selectedMode, setSelectedMode] = useState<"fast" | "accuracy">("fast");
-
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const cancelTracker = useRef<AbortController | null>(null);
-
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = (): void => {
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : null);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [audioFile]);
+
   const onFileSelect = async (file: File) => {
+    setTranscriptionText("");
     if (file.type.startsWith("video")) {
       toast.error("Accept only audio, type WAV, MP3");
       return;
@@ -60,12 +78,11 @@ export default function AudioTranscription() {
 
     const formData = new FormData();
     formData.append("file", file);
-
     cancelTracker.current = new AbortController();
 
     try {
       setUploadResult({ key: null, uploading: true });
-      const res = await axios.post(`${API_URL}/api/upload`, formData, {
+      const res = await axios.post(`/api/upload-audio`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -95,6 +112,7 @@ export default function AudioTranscription() {
   };
 
   const clearAudioState = () => {
+    setTranscriptionText("")
     if (cancelTracker.current) {
       cancelTracker.current.abort();
       cancelTracker.current = null;
@@ -114,12 +132,14 @@ export default function AudioTranscription() {
       mimetype: audioFile?.type,
       language: selectedLanguage,
       mode: selectedMode,
+      filename: audioFile?.name,
+      duration,
     };
 
     setTranscriptionText("");
     setStatus("transcribing");
     try {
-      const response = await fetch(`${API_URL}/api/transcribe`, {
+      const response = await fetch(`/api/transcribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -189,6 +209,8 @@ export default function AudioTranscription() {
               uploadFinished={uploadFinished}
               isUploading={isUploading}
               uploadResult={uploadResult}
+              duration={duration}
+              audioRef={audioRef}
             />
           ) : (
             <DropZone onFileSelect={onFileSelect} />
@@ -229,9 +251,9 @@ export default function AudioTranscription() {
               {uploadResult === null
                 ? "Transcribe Audio"
                 : uploadResult.uploading
-                  ? "Wait for uploading"
+                  ? <><Spinner/> Wait for uploading</>
                   : transcribing
-                    ? "Transcribing"
+                    ? <><Spinner/> Transcribing..</>
                     : "Transcribe Audio"}
             </Button>
           </div>

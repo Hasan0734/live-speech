@@ -1,5 +1,5 @@
 import { CheckIcon, MicVocalIcon, XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { motion } from "motion/react";
 import { formatDuration, formatTime } from "@/lib/utils";
@@ -17,6 +17,8 @@ interface AudioPreviewProps {
   uploadFinished: boolean;
   isUploading: boolean;
   uploadResult: UploadResult | null;
+  duration: number | null
+  audioRef: RefObject<HTMLAudioElement | null>
 }
 
 const AudioPreview = ({
@@ -27,24 +29,9 @@ const AudioPreview = ({
   uploadProgress,
   uploadFinished,
   uploadResult,
+  duration, 
+  audioRef
 }: AudioPreviewProps) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [duration, setDuration] = useState<number | null>(null);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleLoadedMetadata = (): void => {
-      setDuration(Number.isFinite(audio.duration) ? audio.duration : null);
-    };
-
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-    return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
-  }, []);
 
   return (
     <motion.div

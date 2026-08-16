@@ -27,12 +27,7 @@ export async function UploadAudio(app: FastifyInstance) {
 
 
         try {
-
-            console.log(data)
-
             const uniqueFilename = uuidv4()
-
-
             const parallelUpload = new Upload({
                 client: app.s3,
                 params: {

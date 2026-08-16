@@ -51,6 +51,9 @@ export async function updateSession(request: NextRequest) {
         '/dashboard/history',
         '/dashboard/profile',
         '/dashboard/settings',
+        "/api/transcribe",
+        "/api/voice-generation",
+        "/api/upload-audio"
     ]
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 

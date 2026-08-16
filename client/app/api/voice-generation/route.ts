@@ -3,24 +3,10 @@ import { GoogleGenAI, Modality } from "@google/genai";
 import { createClient } from "@/utils/supabase/server";
 import { Upload } from '@aws-sdk/lib-storage';
 import { s3 } from "@/utils/supabase/s3";
+import { getAi } from "@/lib/utils";
 
 
 
-const getAi = () => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        console.warn("GEMINI_API_KEY environment variable is not set.");
-    }
-
-    return new GoogleGenAI({
-        apiKey: apiKey || "",
-        httpOptions: {
-            headers: {
-                "User-Agent": "nextjs-build"
-            }
-        }
-    });
-};
 
 const createWavBuffer = (rawMimeType: string, base64Audio: string): Buffer => {
     const pcmBuffer = Buffer.from(base64Audio, "base64");
