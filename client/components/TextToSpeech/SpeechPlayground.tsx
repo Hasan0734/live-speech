@@ -8,6 +8,7 @@ import { VoiceGeneration, VoiceInfo } from "@/lib/type";
 import { toast } from "sonner";
 import VoiceHistory from "./VoiceHistory";
 import TextInputArea from "./TextInputArea";
+import { useRouter } from "next/navigation";
 
 interface SpeechPlaygroundProps {
   initialHistory: VoiceGeneration[];
@@ -21,6 +22,8 @@ const SpeechPlayground = ({ initialHistory }: SpeechPlaygroundProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const router = useRouter()
 
   const [selectedVoice, setSelectedVoice] = useState<VoiceInfo>({
     name: "Zephyr",
@@ -50,6 +53,7 @@ const SpeechPlayground = ({ initialHistory }: SpeechPlaygroundProps) => {
 
       setAudioUrl(res.data.audioUrl);
       setResVoice((prev) => ({ ...prev, name: res.data.voiceUsed }));
+      router.refresh();
       setSelectedId(null);
       setLoading(false);
     } catch (error: any) {

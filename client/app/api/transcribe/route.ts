@@ -43,12 +43,12 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { key, mimetype, mode, language, duration, filename } = body as {
+    const { key, mimetype, mode, language, duration, file_name } = body as {
         key: string;
         mimetype: string;
         mode?: "fast" | "accuracy";
         language: string;
-        filename: string;
+        file_name: string;
         duration: number
     };
 
@@ -121,8 +121,6 @@ export async function POST(req: Request) {
                         }
                     }
 
-
-
                     if (fullTranscriptionText.trim()) {
                         const { error: dbError } = await supabase.from("transcribe").insert([
                             {
@@ -133,7 +131,7 @@ export async function POST(req: Request) {
                                 text_length: fullTranscriptionText.length,
                                 user_id: user.id,
                                 duration,
-                                filename,
+                                file_name,
                                 mode,
                             },
                         ]);

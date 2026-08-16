@@ -17,6 +17,7 @@ import TranscribedPreview from "./TranscribedPreview";
 import TranscribeHeading from "./TranscribeHeading";
 import TranscribeSidebar from "./TranscribeSidebar";
 import { Spinner } from "../ui/spinner";
+import { Transcribe } from "@/lib/type";
 
 const steps = [
   { number: "1", label: "Upload audio", active: true },
@@ -31,7 +32,11 @@ type UploadResult = {
   uploading: boolean;
 };
 
-export default function AudioTranscription() {
+interface AudioTranscriptionProps {
+  initialHistory: Transcribe[]
+}
+
+export default function AudioTranscription({initialHistory}: AudioTranscriptionProps) {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioSrc, setAudioSrc] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -45,6 +50,8 @@ export default function AudioTranscription() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const cancelTracker = useRef<AbortController | null>(null);
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+
+  const router = useRouter()
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
@@ -132,7 +139,7 @@ export default function AudioTranscription() {
       mimetype: audioFile?.type,
       language: selectedLanguage,
       mode: selectedMode,
-      filename: audioFile?.name,
+      file_name: audioFile?.name,
       duration,
     };
 
@@ -174,6 +181,8 @@ export default function AudioTranscription() {
           }
         }
       }
+
+      router.refresh()
     } catch (err) {
       setStatus("error");
     } finally {
@@ -186,8 +195,9 @@ export default function AudioTranscription() {
   };
 
   return (
-    <div className="size-full flex overflow-hidden">
-      <motion.div className="max-w-4xl mx-auto p-6 font-sans h-screen">
+    <div className="size-full flex ">
+      {/* sm:px-10 2xl:px-30 scroll-fade */}
+      <motion.div className="max-w-6xl mx-auto px-20 scroll-fade p-6 font-sans h-screen overflow-y-scroll scrollbar-thin scrollbar-thumb-accent">
         <TranscribeHeading />
         {/* Steps Badge Row */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
@@ -269,7 +279,7 @@ export default function AudioTranscription() {
         )}
       </motion.div>
 
-      <TranscribeSidebar />
+     {initialHistory.length > 0 && <TranscribeSidebar  initialHistory={initialHistory}/>}
     </div>
   );
 }

@@ -3,8 +3,14 @@ import { motion } from "motion/react";
 import { RotateCcwClock } from "lucide-react";
 import TranscribedCard from "./TranscribedCard";
 import { Accordion } from "../ui/accordion";
+import { Transcribe } from "@/lib/type";
 
-const TranscribeSidebar = () => {
+interface TranscribeSidebarProps {
+  initialHistory: Transcribe[];
+}
+
+const TranscribeSidebar = ({ initialHistory }: TranscribeSidebarProps) => {
+  console.log(initialHistory);
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
@@ -21,8 +27,10 @@ const TranscribeSidebar = () => {
         <span className="font-semibold text-foreground ">History</span>
       </div>
       <div className="px-3 py-4">
-        <Accordion type="multiple">
-          <TranscribedCard />
+        <Accordion type="multiple" className="space-y-2">
+          {initialHistory.map((transcribe) => (
+            <TranscribedCard transcribe={transcribe} key={transcribe.id} />
+          ))}
         </Accordion>
       </div>
     </motion.div>

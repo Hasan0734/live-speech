@@ -56,7 +56,7 @@ const TranscribedPreview = ({
               <Sparkles /> Generate prompt
             </Button>
           </div> */}
-      <InputGroup className="bg-card max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:max-h-100 has-[[data-slot=input-group-control]:focus-visible]:scrollbar-thumb-accent">
+      <InputGroup className="bg-card  px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:max-h-100 has-[[data-slot=input-group-control]:focus-visible]:scrollbar-thumb-accent">
         <InputGroupTextarea value={transcriptionText} readOnly />
         <InputGroupAddon align={"block-start"}>
           <div className="flex  justify-between items-center w-full">
