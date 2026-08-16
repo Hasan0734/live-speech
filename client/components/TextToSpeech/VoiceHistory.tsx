@@ -2,7 +2,7 @@ import { VoiceGeneration } from "@/lib/type";
 
 import { Badge } from "../ui/badge";
 import VoiceCard from "./VoiceCard";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import SearchAndFilter from "./SearchAndFilter";
 import HistoryDetails from "./HistoryDetails";
 import { AnimatePresence, motion } from "motion/react";
@@ -15,7 +15,7 @@ interface VoiceHistoryProps {
   audioUrl: string | null;
   selectedId: string | null;
   setSelectedId: Dispatch<SetStateAction<string | null>>;
-  setText: Dispatch<SetStateAction<string>>
+  setText: Dispatch<SetStateAction<string>>;
 }
 
 const groupHistoryByDate = (items: VoiceGeneration[]) => {
@@ -46,13 +46,27 @@ const VoiceHistory = ({
   audioUrl,
   selectedId,
   setSelectedId,
-  setText
+  setText,
 }: VoiceHistoryProps) => {
-  const groupedHistory = groupHistoryByDate(initialHistory);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedItem, setSelectedItem] = useState<VoiceGeneration | null>(
     null,
   );
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filterdHistory = useMemo(() => {
+    if (!searchQuery.trim()) return initialHistory;
+
+    const query = searchQuery.toLowerCase();
+    return initialHistory.filter(
+      (item) =>
+        item.text_content.toLowerCase().includes(query) ||
+        item.voice_used.toLowerCase().includes(query),
+    );
+  }, [initialHistory, searchQuery]);
+
+  const groupedHistory = groupHistoryByDate(filterdHistory);
 
   return (
     <div className="w-100 2xl:w-120 bg-sidebar border-l h-full overflow-hidden">
@@ -63,7 +77,6 @@ const VoiceHistory = ({
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            // Standard ease transition plays nicely with mode="wait"
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="flex flex-col h-full pr-1"
           >
@@ -77,7 +90,10 @@ const VoiceHistory = ({
               </span>
             </div>
 
-            <SearchAndFilter />
+            <SearchAndFilter
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
 
             {/* History Feed List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-accent scroll-fade">

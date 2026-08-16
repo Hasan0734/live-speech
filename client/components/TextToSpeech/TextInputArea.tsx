@@ -28,12 +28,12 @@ const TextInputArea = ({
   setSelectedVoice,
 }: TextInputAreaProps) => {
   return (
-    <InputGroup className="min-h-0 bg-background! max-w-4xl mx-auto px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+    <InputGroup className="min-h-0 bg-background!  px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
       <InputGroupTextarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Start type here or paste..."
-        className=" h-full pt-5 px-10 scroll-fade scrollbar-thin scrollbar-thumb-accent text-sm text-balance"
+        className=" h-full pt-5 px-10 2xl:px-30 scroll-fade scrollbar-thin scrollbar-thumb-accent text-sm text-balance"
       />
       <InputGroupAddon
         align={"block-end"}
