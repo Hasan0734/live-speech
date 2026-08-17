@@ -22,7 +22,7 @@ const TranscribedPreview = ({
   const router = useRouter();
   const handleGenerate = () => {
     sessionStorage.setItem("promptScript", transcriptionText);
-    router.push("/prompt-generation");
+    router.push("/dashboard/prompt-generation");
   };
 
   const handleCopy = async () => {
@@ -51,11 +51,7 @@ const TranscribedPreview = ({
 
   return (
     <div className="mt-6 rounded-xl">
-      {/* <div className="flex items-center justify-between mb-4">
-            <Button>
-              <Sparkles /> Generate prompt
-            </Button>
-          </div> */}
+ 
       <InputGroup className="bg-card  px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:max-h-100 has-[[data-slot=input-group-control]:focus-visible]:scrollbar-thumb-accent">
         <InputGroupTextarea value={transcriptionText} readOnly />
         <InputGroupAddon align={"block-start"}>

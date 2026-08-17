@@ -20,7 +20,7 @@ const ModeSelection = ({
   return (
     <RadioGroup
       defaultValue="fast"
-      className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
+      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4 mb-4"
       onValueChange={(v: "fast" | "accuracy") => setSelectedMode(v)}
     >
       <FieldLabel

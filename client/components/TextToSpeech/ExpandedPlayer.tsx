@@ -205,7 +205,7 @@ const ExpandedPlayer = ({
       className="overflow-hidden cursor-default"
     >
       <div className="px-3 pb-4 pt-2 sm:px-5">
-        <div className="flex items-center justify-between gap-10 ">
+        <div className="flex flex-col sm:flex-row w-full 2xl:items-center justify-between gap-10 ">
           <div className="flex items-start gap-3">
             <VoiceAvatar isPlaying={isPlaying} isGenerating={isGenerating} />
 

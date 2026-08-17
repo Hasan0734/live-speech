@@ -195,9 +195,9 @@ export default function AudioTranscription({initialHistory}: AudioTranscriptionP
   };
 
   return (
-    <div className="size-full flex ">
+    <div className="flex w-full">
       {/* sm:px-10 2xl:px-30 scroll-fade */}
-      <motion.div className="max-w-6xl mx-auto px-20 scroll-fade p-6 font-sans h-screen overflow-y-scroll scrollbar-thin scrollbar-thumb-accent">
+      <motion.div className="w-full lg:max-w-4xl mx-auto 2xl:px-20 min-h-[calc(100vh-56px)] scroll-fade p-6 font-sans overflow-y-scroll scrollbar-thin scrollbar-thumb-accent">
         <TranscribeHeading />
         {/* Steps Badge Row */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
@@ -240,10 +240,11 @@ export default function AudioTranscription({initialHistory}: AudioTranscriptionP
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <SelectLanguage
+
             selectedLanguage={selectedLanguage}
             setSelectedLanguage={setSelectedLanguage}
           />
-          <div className="sm:col-span-3">
+          <div className="sm:col-span-3 md:col-span-3 lg:col-span-3 xl:col-span-3">
             <Button
               onClick={handleTranscribe}
               disabled={

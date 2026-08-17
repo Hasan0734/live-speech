@@ -1,5 +1,9 @@
 import AiSidebar from "@/components/AiSidebar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export default function AILayout({
   children,
@@ -7,10 +11,15 @@ export default function AILayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider >
+    <SidebarProvider>
       <AiSidebar />
       <SidebarInset>
-        <main className="h-full">{children}</main>
+        <main className="h-full relative">
+          <nav className="py-3.5 h-14 border-b sticky top-0 z-10 bg-background px-3">
+            <SidebarTrigger />
+          </nav>
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

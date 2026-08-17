@@ -91,8 +91,8 @@ const SpeechPlayground = ({ initialHistory }: SpeechPlaygroundProps) => {
   }, [text]);
 
   return (
-    <div className="size-full flex flex-col relative translate-[0,0]">
-      <div className="w-full h-full flex ">
+    <div className="size-full flex flex-col relative ">
+      <div className="w-full h-full flex bg-amber-700">
         <TextInputArea
           text={text}
           setText={setText}

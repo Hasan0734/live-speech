@@ -28,7 +28,7 @@ const TextInputArea = ({
   setSelectedVoice,
 }: TextInputAreaProps) => {
   return (
-    <InputGroup className="min-h-0 bg-background!  px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+    <InputGroup className="min-h-0 bg-background!  px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 rounded-none has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 w-full">
       <InputGroupTextarea
         value={text}
         onChange={(e) => setText(e.target.value)}

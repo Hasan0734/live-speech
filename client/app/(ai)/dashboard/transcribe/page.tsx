@@ -11,7 +11,7 @@ const getHistory = async () => {
 const TranscribePage = async () => {
   const data = await getHistory();
   return (
-    <div className="relative flex px-4 md:px-0">
+    <div className="relative flex">
       <AudioTranscription initialHistory={data} />
     </div>
   );

@@ -1,16 +1,11 @@
-
 import Link from "next/link";
-import {
-
-  Sparkles,
-
-  Zap,
-} from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 
 import {
   Sidebar,
   SidebarHeader,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 import UserProfile from "./UserProfile";
@@ -18,13 +13,12 @@ import { Button } from "./ui/button";
 import SidebarContents from "./SidebarContents";
 
 const AiSidebar = () => {
-
   return (
     <Sidebar
       variant="sidebar"
       className="border-r border-border bg-card text-card-foreground select-none"
     >
-      <SidebarHeader className="h-14 px-4 flex flex-row items-center border-b border-border/60">
+      <SidebarHeader className="h-14 px-4 flex flex-row justify-between items-center border-b border-border/60">
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-linear-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg shadow-red-600/20">
             <Sparkles className="h-5 w-5 text-white" />
@@ -34,6 +28,9 @@ const AiSidebar = () => {
               OmniStudio AI
             </span>
           </div>
+        </div>
+        <div className="lg:hidden">
+          <SidebarTrigger />
         </div>
       </SidebarHeader>
 

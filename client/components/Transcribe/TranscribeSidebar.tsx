@@ -10,17 +10,10 @@ interface TranscribeSidebarProps {
 }
 
 const TranscribeSidebar = ({ initialHistory }: TranscribeSidebarProps) => {
-  console.log(initialHistory);
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 50 }}
-      transition={{
-        duration: 0.3,
-        ease: "easeInOut",
-      }}
-      className="w-100 2xl:w-120 bg-sidebar border-l h-screen overflow-hidden"
+    <div
+
+      className="hidden md:block min-w-90  2xl:min-w-120 bg-sidebar border-l "
     >
       <div className="px-6 pt-4 pb-3 border-b flex items-center gap-2 text-sm">
         <RotateCcwClock size={18} />
@@ -33,7 +26,7 @@ const TranscribeSidebar = ({ initialHistory }: TranscribeSidebarProps) => {
           ))}
         </Accordion>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

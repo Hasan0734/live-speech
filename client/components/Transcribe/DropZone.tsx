@@ -68,7 +68,7 @@ const DropZone = ({ onFileSelect }: DropZoneProps) => {
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-xs font-medium shadow-sm"
+        className="inline-flex items-center flex-wrap gap-2 px-4 py-2 rounded-full bg-accent text-white text-xs font-medium shadow-sm"
       >
         <span>💡 Have audio in multiple parts?</span>
         <button className="underline underline-offset-2 hover:text-slate-200 font-semibold cursor-pointer">

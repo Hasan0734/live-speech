@@ -97,7 +97,7 @@ const SelectLanguage = ({
       value={selectedLanguage}
       onValueChange={(language) => setSelectedLanguage(language)}
     >
-      <SelectTrigger className="h-12! w-full rounded-xl">
+      <SelectTrigger className="h-12! w-full rounded-xl md:col-span-1 lg:col-span-1 xl:col-span-1">
         <SelectValue placeholder="Language" />
       </SelectTrigger>
       <SelectContent>
