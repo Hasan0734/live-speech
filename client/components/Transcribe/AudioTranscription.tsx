@@ -195,9 +195,9 @@ export default function AudioTranscription({initialHistory}: AudioTranscriptionP
   };
 
   return (
-    <div className="flex w-full">
+    <div className="flex w-full relative  min-h-[calc(100vh-56px)]">
       {/* sm:px-10 2xl:px-30 scroll-fade */}
-      <motion.div className="w-full lg:max-w-4xl mx-auto 2xl:px-20 min-h-[calc(100vh-56px)] scroll-fade p-6 font-sans overflow-y-scroll scrollbar-thin scrollbar-thumb-accent">
+      <motion.div className="w-full lg:max-w-4xl mx-auto 2xl:px-20  scroll-fade p-6 font-sans overflow-y-scroll scrollbar-thin scrollbar-thumb-accent">
         <TranscribeHeading />
         {/* Steps Badge Row */}
         <div className="flex flex-wrap items-center gap-2 mb-8">

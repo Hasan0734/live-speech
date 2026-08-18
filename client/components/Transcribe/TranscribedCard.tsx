@@ -59,7 +59,7 @@ const TranscribedCard = ({ transcribe }: TranscribedCardProps) => {
       <div className="bg-accent p-2 rounded-xl">
         <AccordionTrigger className="hover:no-underline py-0 items-center">
           <div>
-            <p className="line-clamp-1">{transcribe.file_name}</p>
+            <p className="line-clamp-1 text-sm font-medium ">{transcribe.file_name}</p>
             <p className="text-[10px] text-muted-foreground mt-2">
               {formatDuration(transcribe.duration)} ·{" "}
               <span className="capitalize">{transcribe.mode} mode</span> · ~6
@@ -77,9 +77,9 @@ const TranscribedCard = ({ transcribe }: TranscribedCardProps) => {
         </AccordionTrigger>
         <AccordionContent className="pb-0! mt-2" asChild>
           <InputGroup className="bg-sidebar! px-0 dark:has-disabled:bg-input/30 pt-2 has-disabled:opacity-100 flex-1 has-data-[slot=input-group-control]:border-0 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:max-h-100 has-[[data-slot=input-group-control]:focus-visible]:scrollbar-thumb-accent">
-            <InputGroupTextarea value={transcribe.text_content} readOnly />
+            <InputGroupTextarea className="text-muted-foreground text-xs!" value={transcribe.text_content} readOnly />
             <InputGroupAddon align={"block-start"} className="pt-1">
-              <div className="flex  justify-between items-center w-full">
+              <div className="flex justify-between items-center w-full">
                 <Button
                   className="rounded-full"
                   onClick={handleGenerate}

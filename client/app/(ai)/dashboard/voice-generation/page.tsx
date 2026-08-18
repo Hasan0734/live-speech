@@ -18,7 +18,7 @@ const TextToSpeech = async () => {
   const data = await getHistory();
 
   return (
-    <div className="relative h-screen">
+    <div className="relative min-h-[calc(100vh-59px)]">
       <SpeechPlayground initialHistory={data} />
     </div>
   );

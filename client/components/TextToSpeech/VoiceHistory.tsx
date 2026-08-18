@@ -69,7 +69,7 @@ const VoiceHistory = ({
   const groupedHistory = groupHistoryByDate(filterdHistory);
 
   return (
-    <div className="hidden md:block w-90  2xl:w-120 bg-sidebar border-l h-full overflow-hidden">
+    <div className="hidden md:block w-90 2xl:w-120 bg-sidebar border-l overflow-hidden min-h-[calc(100dvh-56px)] max-h-[calc(100vh-56px)]">
       <AnimatePresence mode="wait">
         {!openDetails && (
           <motion.div
@@ -78,7 +78,7 @@ const VoiceHistory = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="flex flex-col h-full pr-1"
+            className="h-full pr-1"
           >
             {/* Top Header Tabs simulation */}
             <div className="px-6 pt-4 pb-3 border-b flex items-center gap-6 text-sm">
@@ -96,7 +96,7 @@ const VoiceHistory = ({
             />
 
             {/* History Feed List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-accent scroll-fade">
+            <div className="h-3/4 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-accent scroll-fade">
               {Object.keys(groupedHistory).length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <p className="text-sm">No history found</p>
